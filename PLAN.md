@@ -27,19 +27,19 @@ Based on `SPEC.md`, `CLAUDE.md`, and `README.md`, this plan outlines the 6-week 
 ## 🗓️ Phase 2: Core Features - Posting & Feed (Week 2)
 **Goal:** Enable users to create content and view a feed.
 
-- [ ] **Media Handling**
-    - [ ] Image/Video Picker integration.
-    - [ ] Media compression logic.
-    - [ ] Supabase Storage setup (`posts` bucket).
-- [ ] **Create Post**
-    - [ ] Create Post Screen UI.
-    - [ ] Upload logic (Media -> Storage, Data -> `posts` & `post_media` tables).
-    - [ ] Background upload handling.
-- [ ] **Feed System**
-    - [ ] Home Feed Screen UI.
-    - [ ] Fetch posts logic (Chronological).
-    - [ ] Display posts (Image/Video rendering).
-    - [ ] Pagination (Infinite scroll).
+- [x] **Media Handling**
+    - [x] Image/Video Picker integration.
+    - [x] Media compression logic.
+    - [x] Supabase Storage setup (`posts` bucket).
+- [x] **Create Post**
+    - [x] Create Post Screen UI.
+    - [x] Upload logic (Media -> Storage, Data -> `posts` & `post_media` tables).
+    - [x] Background upload handling.
+- [x] **Feed System**
+    - [x] Home Feed Screen UI.
+    - [x] Fetch posts logic (Chronological).
+    - [x] Display posts (Image/Video rendering).
+    - [x] Pagination (Infinite scroll).
 
 ## 🗓️ Phase 3: Engagement (Week 3)
 **Goal:** Add social interactions to posts.

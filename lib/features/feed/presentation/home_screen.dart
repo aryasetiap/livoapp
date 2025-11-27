@@ -6,17 +6,91 @@ import 'package:livoapp/features/feed/data/post_repository.dart';
 import 'package:livoapp/features/feed/domain/post_model.dart';
 import 'package:livoapp/features/feed/presentation/widgets/post_item.dart';
 
-final feedProvider = FutureProvider<List<PostModel>>((ref) async {
-  final repository = ref.watch(postRepositoryProvider);
-  return repository.getPosts();
-});
+final feedControllerProvider =
+    StateNotifierProvider<FeedController, AsyncValue<List<PostModel>>>((ref) {
+      return FeedController(ref.watch(postRepositoryProvider));
+    });
 
-class HomeScreen extends ConsumerWidget {
+class FeedController extends StateNotifier<AsyncValue<List<PostModel>>> {
+  final PostRepository _repository;
+  int _page = 0;
+  final int _limit = 10;
+  bool _hasMore = true;
+
+  FeedController(this._repository) : super(const AsyncValue.loading()) {
+    loadInitialPosts();
+  }
+
+  Future<void> loadInitialPosts() async {
+    try {
+      _page = 0;
+      _hasMore = true;
+      state = const AsyncValue.loading();
+      final posts = await _repository.getPosts(page: _page, limit: _limit);
+      state = AsyncValue.data(posts);
+      if (posts.length < _limit) _hasMore = false;
+    } catch (e, st) {
+      state = AsyncValue.error(e, st);
+    }
+  }
+
+  Future<void> loadMorePosts() async {
+    if (!_hasMore || state.isLoading || state.isRefreshing) return;
+
+    try {
+      _page++;
+      final currentPosts = state.value ?? [];
+      final newPosts = await _repository.getPosts(page: _page, limit: _limit);
+
+      if (newPosts.isEmpty) {
+        _hasMore = false;
+      } else {
+        state = AsyncValue.data([...currentPosts, ...newPosts]);
+        if (newPosts.length < _limit) _hasMore = false;
+      }
+    } catch (e) {
+      // Handle error silently or show snackbar in UI
+      _hasMore = false;
+    }
+  }
+
+  Future<void> refresh() async {
+    await loadInitialPosts();
+  }
+}
+
+class HomeScreen extends ConsumerStatefulWidget {
   const HomeScreen({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final feedState = ref.watch(feedProvider);
+  ConsumerState<HomeScreen> createState() => _HomeScreenState();
+}
+
+class _HomeScreenState extends ConsumerState<HomeScreen> {
+  final ScrollController _scrollController = ScrollController();
+
+  @override
+  void initState() {
+    super.initState();
+    _scrollController.addListener(_onScroll);
+  }
+
+  @override
+  void dispose() {
+    _scrollController.dispose();
+    super.dispose();
+  }
+
+  void _onScroll() {
+    if (_scrollController.position.pixels >=
+        _scrollController.position.maxScrollExtent - 200) {
+      ref.read(feedControllerProvider.notifier).loadMorePosts();
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final feedState = ref.watch(feedControllerProvider);
 
     return Scaffold(
       body: Container(
@@ -28,8 +102,10 @@ class HomeScreen extends ConsumerWidget {
           ),
         ),
         child: RefreshIndicator(
-          onRefresh: () async => ref.refresh(feedProvider),
+          onRefresh: () async =>
+              ref.read(feedControllerProvider.notifier).refresh(),
           child: CustomScrollView(
+            controller: _scrollController,
             slivers: [
               SliverAppBar(
                 floating: true,
@@ -143,9 +219,18 @@ class HomeScreen extends ConsumerWidget {
                     );
                   }
                   return SliverList(
-                    delegate: SliverChildBuilderDelegate((context, index) {
-                      return PostItem(post: posts[index]);
-                    }, childCount: posts.length),
+                    delegate: SliverChildBuilderDelegate(
+                      (context, index) {
+                        if (index == posts.length) {
+                          return const Padding(
+                            padding: EdgeInsets.all(16.0),
+                            child: Center(child: CircularProgressIndicator()),
+                          );
+                        }
+                        return PostItem(post: posts[index]);
+                      },
+                      childCount: posts.length + 1,
+                    ), // +1 for loading indicator
                   );
                 },
                 loading: () => const SliverFillRemaining(
