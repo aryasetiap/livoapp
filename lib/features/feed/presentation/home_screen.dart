@@ -37,14 +37,32 @@ class HomeScreen extends ConsumerWidget {
                 backgroundColor: Theme.of(
                   context,
                 ).colorScheme.surface.withValues(alpha: 0.8),
-                title: Text(
-                  'Livo',
-                  style: TextStyle(
-                    fontWeight: FontWeight.w900,
-                    fontSize: 28,
-                    color: Theme.of(context).colorScheme.primary,
-                    letterSpacing: -1,
-                  ),
+                title: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Image.asset(
+                      'assets/images/livo_logo_square.png',
+                      height: 32,
+                      width: 32,
+                      errorBuilder: (context, error, stackTrace) {
+                        return Icon(
+                          Icons.image_not_supported_rounded,
+                          color: Theme.of(context).colorScheme.primary,
+                          size: 32,
+                        );
+                      },
+                    ),
+                    const SizedBox(width: 8),
+                    Text(
+                      'Livo',
+                      style: TextStyle(
+                        fontWeight: FontWeight.w900,
+                        fontSize: 28,
+                        color: Theme.of(context).colorScheme.primary,
+                        letterSpacing: -1,
+                      ),
+                    ),
+                  ],
                 ),
                 actions: [
                   IconButton(
