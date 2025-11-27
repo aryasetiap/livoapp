@@ -9,6 +9,7 @@ import 'features/auth/presentation/signup_screen.dart';
 import 'features/auth/presentation/splash_screen.dart';
 import 'features/auth/presentation/forgot_password_screen.dart';
 import 'features/feed/presentation/home_screen.dart';
+import 'features/onboarding/presentation/onboarding_screen.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -27,6 +28,10 @@ final routerProvider = Provider<GoRouter>((ref) {
     initialLocation: '/',
     routes: [
       GoRoute(path: '/', builder: (context, state) => const SplashScreen()),
+      GoRoute(
+        path: '/onboarding',
+        builder: (context, state) => const OnboardingScreen(),
+      ),
       GoRoute(path: '/login', builder: (context, state) => const LoginScreen()),
       GoRoute(
         path: '/signup',
