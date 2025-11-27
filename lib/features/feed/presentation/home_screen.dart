@@ -19,53 +19,133 @@ class HomeScreen extends ConsumerWidget {
     final feedState = ref.watch(feedProvider);
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text(
-          'Livo',
-          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 24),
-        ),
-        actions: [
-          IconButton(
-            onPressed: () {
-              ref.read(authControllerProvider.notifier).signOut();
-              context.go('/login');
-            },
-            icon: const Icon(Icons.logout),
+      body: Container(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [Theme.of(context).colorScheme.surface, Colors.black],
           ),
-        ],
-      ),
-      body: RefreshIndicator(
-        onRefresh: () async => ref.refresh(feedProvider),
-        child: feedState.when(
-          data: (posts) {
-            if (posts.isEmpty) {
-              return const Center(
-                child: Text(
-                  'Belum ada postingan.\nJadilah yang pertama memposting!',
-                  textAlign: TextAlign.center,
-                  style: TextStyle(color: Colors.grey),
+        ),
+        child: RefreshIndicator(
+          onRefresh: () async => ref.refresh(feedProvider),
+          child: CustomScrollView(
+            slivers: [
+              SliverAppBar(
+                floating: true,
+                snap: true,
+                backgroundColor: Theme.of(
+                  context,
+                ).colorScheme.surface.withValues(alpha: 0.8),
+                title: Text(
+                  'Livo',
+                  style: TextStyle(
+                    fontWeight: FontWeight.w900,
+                    fontSize: 28,
+                    color: Theme.of(context).colorScheme.primary,
+                    letterSpacing: -1,
+                  ),
                 ),
-              );
-            }
-            return ListView.builder(
-              itemCount: posts.length,
-              itemBuilder: (context, index) {
-                return PostItem(post: posts[index]);
-              },
-            );
-          },
-          loading: () => const Center(child: CircularProgressIndicator()),
-          error: (error, stack) => Center(
-            child: Text(
-              'Error: $error',
-              style: const TextStyle(color: Colors.red),
-            ),
+                actions: [
+                  IconButton(
+                    onPressed: () {},
+                    icon: const Icon(Icons.notifications_none_rounded),
+                  ),
+                  IconButton(
+                    onPressed: () {
+                      ref.read(authControllerProvider.notifier).signOut();
+                      context.go('/login');
+                    },
+                    icon: const Icon(Icons.logout_rounded),
+                  ),
+                ],
+              ),
+              SliverToBoxAdapter(
+                child: SizedBox(
+                  height: 110,
+                  child: ListView.builder(
+                    scrollDirection: Axis.horizontal,
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 8,
+                    ),
+                    itemCount: 10,
+                    itemBuilder: (context, index) {
+                      return Padding(
+                        padding: const EdgeInsets.only(right: 16),
+                        child: Column(
+                          children: [
+                            Container(
+                              padding: const EdgeInsets.all(3),
+                              decoration: BoxDecoration(
+                                shape: BoxShape.circle,
+                                gradient: LinearGradient(
+                                  colors: [
+                                    Theme.of(context).colorScheme.primary,
+                                    Theme.of(context).colorScheme.secondary,
+                                  ],
+                                  begin: Alignment.topLeft,
+                                  end: Alignment.bottomRight,
+                                ),
+                              ),
+                              child: CircleAvatar(
+                                radius: 32,
+                                backgroundColor: Colors.black,
+                                child: CircleAvatar(
+                                  radius: 30,
+                                  backgroundImage: NetworkImage(
+                                    'https://i.pravatar.cc/150?u=story$index',
+                                  ),
+                                ),
+                              ),
+                            ),
+                            const SizedBox(height: 4),
+                            Text(
+                              'User $index',
+                              style: const TextStyle(fontSize: 12),
+                            ),
+                          ],
+                        ),
+                      );
+                    },
+                  ),
+                ),
+              ),
+              feedState.when(
+                data: (posts) {
+                  if (posts.isEmpty) {
+                    return const SliverFillRemaining(
+                      child: Center(
+                        child: Text(
+                          'Belum ada postingan.\nJadilah yang pertama memposting!',
+                          textAlign: TextAlign.center,
+                          style: TextStyle(color: Colors.grey),
+                        ),
+                      ),
+                    );
+                  }
+                  return SliverList(
+                    delegate: SliverChildBuilderDelegate((context, index) {
+                      return PostItem(post: posts[index]);
+                    }, childCount: posts.length),
+                  );
+                },
+                loading: () => const SliverFillRemaining(
+                  child: Center(child: CircularProgressIndicator()),
+                ),
+                error: (error, stack) => SliverFillRemaining(
+                  child: Center(
+                    child: Text(
+                      'Error: $error',
+                      style: const TextStyle(color: Colors.red),
+                    ),
+                  ),
+                ),
+              ),
+              const SliverPadding(padding: EdgeInsets.only(bottom: 100)),
+            ],
           ),
         ),
-      ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () => context.push('/create-post'),
-        child: const Icon(Icons.add),
       ),
     );
   }
