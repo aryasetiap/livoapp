@@ -21,12 +21,17 @@ class AuthController extends StateNotifier<AsyncValue<void>> {
     );
   }
 
-  Future<void> signUp({required String email, required String password}) async {
+  Future<void> signUp({
+    required String email,
+    required String password,
+    required String username,
+  }) async {
     state = const AsyncValue.loading();
     state = await AsyncValue.guard(
       () => _authRepository.signUpWithEmailAndPassword(
         email: email,
         password: password,
+        username: username,
       ),
     );
   }
@@ -34,5 +39,12 @@ class AuthController extends StateNotifier<AsyncValue<void>> {
   Future<void> signOut() async {
     state = const AsyncValue.loading();
     state = await AsyncValue.guard(() => _authRepository.signOut());
+  }
+
+  Future<void> resetPassword({required String email}) async {
+    state = const AsyncValue.loading();
+    state = await AsyncValue.guard(
+      () => _authRepository.resetPassword(email: email),
+    );
   }
 }

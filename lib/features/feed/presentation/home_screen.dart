@@ -10,7 +10,7 @@ class HomeScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Livo Home'),
+        title: const Text('Beranda'),
         actions: [
           IconButton(
             icon: const Icon(Icons.logout),
@@ -21,7 +21,7 @@ class HomeScreen extends ConsumerWidget {
           ),
         ],
       ),
-      body: const Center(child: Text('Welcome to Livo!')),
+      body: const Center(child: Text('Selamat Datang di Livo!')),
     );
   }
 }

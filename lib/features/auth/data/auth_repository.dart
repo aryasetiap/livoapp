@@ -24,11 +24,20 @@ class AuthRepository {
   Future<AuthResponse> signUpWithEmailAndPassword({
     required String email,
     required String password,
+    required String username,
   }) async {
-    return await _auth.signUp(email: email, password: password);
+    return await _auth.signUp(
+      email: email,
+      password: password,
+      data: {'username': username},
+    );
   }
 
   Future<void> signOut() async {
     await _auth.signOut();
+  }
+
+  Future<void> resetPassword({required String email}) async {
+    await _auth.resetPasswordForEmail(email);
   }
 }

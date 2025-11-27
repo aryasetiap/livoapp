@@ -6,23 +6,23 @@ Based on `SPEC.md`, `CLAUDE.md`, and `README.md`, this plan outlines the 6-week 
 **Goal:** Establish the project foundation and user authentication system.
 
 - [ ] **Project Initialization**
-    - [ ] Create Flutter project with recommended structure.
-    - [ ] Setup `lib/core` (config, utils, widgets).
-    - [ ] Setup `lib/features` directory structure.
-    - [ ] Configure `flutter_riverpod`, `go_router`, `dio`.
-    - [ ] Setup environment variables (`.env`).
+    - [x] Create Flutter project with recommended structure.
+    - [x] Setup `lib/core` (config, utils, widgets).
+    - [x] Setup `lib/features` directory structure.
+    - [x] Configure `flutter_riverpod`, `go_router`, `dio`.
+    - [x] Setup environment variables (`.env`).
 - [ ] **Supabase Integration**
-    - [ ] Initialize Supabase client.
-    - [ ] Setup Supabase Auth (Email/Password, Google Sign-in).
+    - [x] Initialize Supabase client.
+    - [x] Setup Supabase Auth (Email/Password, Google Sign-in).
 - [ ] **Authentication Features**
-    - [ ] Splash Screen (Check auth state).
-    - [ ] Login Screen.
-    - [ ] Signup Screen.
-    - [ ] Logout functionality.
-    - [ ] Password Reset.
+    - [x] Splash Screen (Check auth state).
+    - [x] Login Screen.
+    - [x] Signup Screen.
+    - [x] Logout functionality.
+    - [x] Password Reset.
 - [ ] **Basic Profile**
-    - [ ] User data model (`users` table).
-    - [ ] Fetch current user profile.
+    - [x] User data model (`users` table).
+    - [x] Fetch current user profile.
 
 ## 🗓️ Phase 2: Core Features - Posting & Feed (Week 2)
 **Goal:** Enable users to create content and view a feed.

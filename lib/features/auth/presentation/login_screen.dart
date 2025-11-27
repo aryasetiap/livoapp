@@ -52,41 +52,77 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
 
     return Scaffold(
       appBar: AppBar(title: const Text('Login')),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Form(
-          key: _formKey,
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              TextFormField(
-                controller: _emailController,
-                decoration: const InputDecoration(labelText: 'Email'),
-                validator: (value) => value == null || value.isEmpty
-                    ? 'Please enter email'
-                    : null,
-              ),
-              const SizedBox(height: 16),
-              TextFormField(
-                controller: _passwordController,
-                decoration: const InputDecoration(labelText: 'Password'),
-                obscureText: true,
-                validator: (value) => value == null || value.isEmpty
-                    ? 'Please enter password'
-                    : null,
-              ),
-              const SizedBox(height: 24),
-              ElevatedButton(
-                onPressed: state.isLoading ? null : _login,
-                child: state.isLoading
-                    ? const CircularProgressIndicator()
-                    : const Text('Login'),
-              ),
-              TextButton(
-                onPressed: () => context.go('/signup'),
-                child: const Text('Don\'t have an account? Sign up'),
-              ),
-            ],
+      body: Center(
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.all(24.0),
+          child: Form(
+            key: _formKey,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Image.asset(
+                  'assets/images/livo_logo.png',
+                  height: 100,
+                  width: 100,
+                ),
+                const SizedBox(height: 32),
+                const Text(
+                  'Selamat Datang Kembali',
+                  style: TextStyle(fontSize: 32, fontWeight: FontWeight.bold),
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  'Masuk untuk melanjutkan keseruan di Livo',
+                  style: Theme.of(
+                    context,
+                  ).textTheme.bodyMedium?.copyWith(color: Colors.grey),
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 32),
+                TextFormField(
+                  controller: _emailController,
+                  decoration: const InputDecoration(
+                    labelText: 'Alamat Email',
+                    prefixIcon: Icon(Icons.email_outlined),
+                  ),
+                  validator: (value) => value == null || value.isEmpty
+                      ? 'Email wajib diisi ya'
+                      : null,
+                ),
+                const SizedBox(height: 16),
+                TextFormField(
+                  controller: _passwordController,
+                  decoration: const InputDecoration(
+                    labelText: 'Kata Sandi',
+                    prefixIcon: Icon(Icons.lock_outline),
+                  ),
+                  obscureText: true,
+                  validator: (value) => value == null || value.isEmpty
+                      ? 'Kata sandi jangan kosong dong'
+                      : null,
+                ),
+                Align(
+                  alignment: Alignment.centerRight,
+                  child: TextButton(
+                    onPressed: () => context.push('/forgot-password'),
+                    child: const Text('Lupa Kata Sandi?'),
+                  ),
+                ),
+                const SizedBox(height: 24),
+                ElevatedButton(
+                  onPressed: state.isLoading ? null : _login,
+                  child: state.isLoading
+                      ? const CircularProgressIndicator(color: Colors.white)
+                      : const Text('Masuk Sekarang'),
+                ),
+                const SizedBox(height: 16),
+                TextButton(
+                  onPressed: () => context.go('/signup'),
+                  child: const Text('Belum punya akun? Daftar dulu yuk'),
+                ),
+              ],
+            ),
           ),
         ),
       ),
