@@ -13,6 +13,8 @@ import 'features/feed/presentation/create_post_screen.dart';
 import 'features/onboarding/presentation/onboarding_screen.dart';
 import 'features/navigation/presentation/scaffold_with_navbar.dart';
 
+import 'package:timeago/timeago.dart' as timeago;
+
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await dotenv.load(fileName: "lib/core/config/.env");
@@ -21,6 +23,8 @@ Future<void> main() async {
     url: dotenv.env['SUPABASE_URL']!,
     anonKey: dotenv.env['SUPABASE_ANON_KEY']!,
   );
+
+  timeago.setLocaleMessages('id', timeago.IdMessages());
 
   runApp(const ProviderScope(child: LivoApp()));
 }
