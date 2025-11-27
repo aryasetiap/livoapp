@@ -9,7 +9,9 @@ import 'features/auth/presentation/signup_screen.dart';
 import 'features/auth/presentation/splash_screen.dart';
 import 'features/auth/presentation/forgot_password_screen.dart';
 import 'features/feed/presentation/home_screen.dart';
+import 'features/feed/presentation/create_post_screen.dart';
 import 'features/onboarding/presentation/onboarding_screen.dart';
+import 'features/navigation/presentation/scaffold_with_navbar.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -24,8 +26,11 @@ Future<void> main() async {
 }
 
 final routerProvider = Provider<GoRouter>((ref) {
+  final rootNavigatorKey = GlobalKey<NavigatorState>();
+
   return GoRouter(
-    initialLocation: '/',
+    navigatorKey: rootNavigatorKey,
+    initialLocation: '/home',
     routes: [
       GoRoute(path: '/', builder: (context, state) => const SplashScreen()),
       GoRoute(
@@ -41,7 +46,60 @@ final routerProvider = Provider<GoRouter>((ref) {
         path: '/forgot-password',
         builder: (context, state) => const ForgotPasswordScreen(),
       ),
-      GoRoute(path: '/home', builder: (context, state) => const HomeScreen()),
+      StatefulShellRoute.indexedStack(
+        builder: (context, state, navigationShell) {
+          return ScaffoldWithNavBar(navigationShell: navigationShell);
+        },
+        branches: [
+          StatefulShellBranch(
+            routes: [
+              GoRoute(
+                path: '/home',
+                builder: (context, state) => const HomeScreen(),
+              ),
+            ],
+          ),
+          StatefulShellBranch(
+            routes: [
+              GoRoute(
+                path: '/explore',
+                builder: (context, state) =>
+                    const Scaffold(body: Center(child: Text('Explore'))),
+              ),
+            ],
+          ),
+          StatefulShellBranch(
+            routes: [
+              GoRoute(
+                path: '/create',
+                builder: (context, state) => const CreatePostScreen(),
+              ),
+            ],
+          ),
+          StatefulShellBranch(
+            routes: [
+              GoRoute(
+                path: '/activity',
+                builder: (context, state) =>
+                    const Scaffold(body: Center(child: Text('Activity'))),
+              ),
+            ],
+          ),
+          StatefulShellBranch(
+            routes: [
+              GoRoute(
+                path: '/profile',
+                builder: (context, state) =>
+                    const Scaffold(body: Center(child: Text('Profile'))),
+              ),
+            ],
+          ),
+        ],
+      ),
+      GoRoute(
+        path: '/create-post',
+        builder: (context, state) => const CreatePostScreen(),
+      ),
     ],
   );
 });
