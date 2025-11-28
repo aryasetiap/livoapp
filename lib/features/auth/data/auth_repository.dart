@@ -4,15 +4,21 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:livoapp/features/auth/domain/user_model.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 
+import 'package:livoapp/features/notifications/data/notification_repository.dart';
+
 final authRepositoryProvider = Provider<AuthRepository>((ref) {
-  return AuthRepository(Supabase.instance.client);
+  return AuthRepository(
+    Supabase.instance.client,
+    ref.read(notificationRepositoryProvider),
+  );
 });
 
 class AuthRepository {
   final SupabaseClient _supabase;
+  final NotificationRepository _notificationRepository;
   GoTrueClient get _auth => _supabase.auth;
 
-  AuthRepository(this._supabase);
+  AuthRepository(this._supabase, this._notificationRepository);
 
   Stream<AuthState> get authStateChanges => _auth.onAuthStateChange;
 
@@ -53,6 +59,12 @@ class AuthRepository {
       'follower_id': currentUserId,
       'following_id': userId,
     });
+
+    // Create notification for followed user
+    await _notificationRepository.createFollowNotification(
+      userId,
+      _auth.currentUser?.userMetadata?['username'] ?? 'User',
+    );
   }
 
   Future<void> unfollowUser(String userId) async {

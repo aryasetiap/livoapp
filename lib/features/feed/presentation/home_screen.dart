@@ -186,7 +186,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                 ),
                 actions: [
                   IconButton(
-                    onPressed: () {},
+                    onPressed: () {
+                      context.push('/notifications');
+                    },
                     icon: const Icon(Icons.notifications_none_rounded),
                   ),
                   IconButton(

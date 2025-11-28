@@ -6,18 +6,28 @@ import 'package:uuid/uuid.dart';
 import 'package:livoapp/features/feed/domain/post_model.dart';
 import 'package:livoapp/features/feed/domain/comment_model.dart';
 import 'package:livoapp/features/moderation/data/moderation_repository.dart';
+import 'package:livoapp/features/notifications/data/notification_repository.dart';
 
 import 'package:flutter_image_compress/flutter_image_compress.dart';
 
 final postRepositoryProvider = Provider<PostRepository>((ref) {
-  return PostRepository(Supabase.instance.client, ref.read(moderationRepositoryProvider));
+  return PostRepository(
+    Supabase.instance.client,
+    ref.read(moderationRepositoryProvider),
+    ref.read(notificationRepositoryProvider),
+  );
 });
 
 class PostRepository {
   final SupabaseClient _supabase;
   final ModerationRepository _moderationRepository;
+  final NotificationRepository _notificationRepository;
 
-  PostRepository(this._supabase, this._moderationRepository);
+  PostRepository(
+    this._supabase,
+    this._moderationRepository,
+    this._notificationRepository,
+  );
 
   Future<void> createPost({
     required String userId,
@@ -93,7 +103,8 @@ class PostRepository {
     final posts = response.map((json) => PostModel.fromJson(json)).toList();
 
     // Apply moderation filter - remove posts from blocked users
-    final filteredPosts = await _moderationRepository.filterBlockedUsersFromPosts(posts);
+    final filteredPosts = await _moderationRepository
+        .filterBlockedUsersFromPosts(posts);
 
     if (userId != null && filteredPosts.isNotEmpty) {
       final postIds = filteredPosts.map((p) => p.id).toList();
@@ -119,11 +130,21 @@ class PostRepository {
     final userId = _supabase.auth.currentUser?.id;
     if (userId == null) return;
 
+    final postOwnerId = await _getPostOwnerId(postId);
+
     try {
       await _supabase.from('likes').insert({
         'user_id': userId,
         'post_id': postId,
       });
+
+      // Create notification for post owner
+      if (postOwnerId != null && postOwnerId != userId) {
+        await _notificationRepository.createLikeNotification(
+          postOwnerId,
+          _supabase.auth.currentUser?.userMetadata?['username'] ?? 'User',
+        );
+      }
     } catch (e) {
       // If insert fails (unique constraint), it means already liked, so delete
       await _supabase
@@ -131,6 +152,20 @@ class PostRepository {
           .delete()
           .eq('user_id', userId)
           .eq('post_id', postId);
+    }
+  }
+
+  Future<String?> _getPostOwnerId(String postId) async {
+    try {
+      final response = await _supabase
+          .from('posts')
+          .select('user_id')
+          .eq('id', postId)
+          .single();
+
+      return response['user_id'] as String?;
+    } catch (e) {
+      return null;
     }
   }
 
@@ -164,5 +199,14 @@ class PostRepository {
       'post_id': postId,
       'content': content,
     });
+
+    // Create notification for post owner
+    final postOwnerId = await _getPostOwnerId(postId);
+    if (postOwnerId != null && postOwnerId != userId) {
+      await _notificationRepository.createCommentNotification(
+        postOwnerId,
+        _supabase.auth.currentUser?.userMetadata?['username'] ?? 'User',
+      );
+    }
   }
 }

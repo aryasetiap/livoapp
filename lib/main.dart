@@ -23,6 +23,7 @@ import 'features/auth/domain/user_model.dart';
 import 'features/chat/presentation/chat_list_screen.dart';
 import 'features/chat/presentation/chat_room_screen.dart';
 import 'features/chat/data/chat_repository.dart';
+import 'features/notifications/presentation/notifications_screen.dart';
 
 import 'package:timeago/timeago.dart' as timeago;
 
@@ -148,6 +149,10 @@ final routerProvider = Provider<GoRouter>((ref) {
         ],
       ),
       GoRoute(
+        path: '/notifications',
+        builder: (context, state) => const NotificationsScreen(),
+      ),
+      GoRoute(
         path: '/create-post',
         builder: (context, state) => const CreatePostScreen(),
       ),
@@ -165,6 +170,7 @@ final routerProvider = Provider<GoRouter>((ref) {
           return ProfileScreen(userId: userId);
         },
       ),
+
       GoRoute(
         path: '/search',
         builder: (context, state) => const SearchScreen(),
