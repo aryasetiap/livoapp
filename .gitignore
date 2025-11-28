@@ -49,3 +49,4 @@ app.*.map.json
 .mcp.json
 CLAUDE.md 
 PLAN.md
+SPEC.md
