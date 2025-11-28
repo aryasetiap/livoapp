@@ -1,6 +1,8 @@
+import 'package:flutter/foundation.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:livoapp/features/auth/domain/user_model.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 
 final authRepositoryProvider = Provider<AuthRepository>((ref) {
   return AuthRepository(Supabase.instance.client);
@@ -134,6 +136,41 @@ class AuthRepository {
       'following_count': followingCount,
       'isFollowing': isFollowing,
       'created_at': data['created_at'] ?? DateTime.now().toIso8601String(),
+    });
+  }
+
+  Future<void> saveFcmToken() async {
+    final currentUserId = _auth.currentUser?.id;
+    if (currentUserId == null) return;
+
+    try {
+      final FirebaseMessaging messaging = FirebaseMessaging.instance;
+      String? token = await messaging.getToken();
+
+      if (token != null) {
+        await _supabase
+            .from('profiles')
+            .update({'fcm_token': token})
+            .eq('id', currentUserId);
+      }
+    } catch (e) {
+      // Log error but don't fail auth flow
+      debugPrint('Failed to save FCM token: $e');
+    }
+  }
+
+  Future<void> setupFcmListeners() async {
+    final currentUserId = _auth.currentUser?.id;
+    if (currentUserId == null) return;
+
+    FirebaseMessaging messaging = FirebaseMessaging.instance;
+
+    // Listen for token refresh
+    messaging.onTokenRefresh.listen((token) async {
+      await _supabase
+          .from('profiles')
+          .update({'fcm_token': token})
+          .eq('id', currentUserId);
     });
   }
 

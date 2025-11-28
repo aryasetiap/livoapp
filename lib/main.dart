@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:go_router/go_router.dart';
 import 'core/config/theme.dart';
@@ -18,17 +20,59 @@ import 'features/profile/presentation/profile_screen.dart';
 import 'features/profile/presentation/edit_profile_screen.dart';
 import 'features/search/presentation/search_screen.dart';
 import 'features/auth/domain/user_model.dart';
+import 'features/chat/presentation/chat_list_screen.dart';
+import 'features/chat/presentation/chat_room_screen.dart';
+import 'features/chat/data/chat_repository.dart';
 
 import 'package:timeago/timeago.dart' as timeago;
+
+Future<void> setupFcmForAuthenticatedUsers() async {
+  try {
+    final auth = Supabase.instance.client.auth;
+    final user = auth.currentUser;
+
+    if (user != null) {
+      final messaging = FirebaseMessaging.instance;
+
+      // Request permission for iOS
+      await messaging.requestPermission();
+
+      // Get FCM token
+      String? token = await messaging.getToken();
+
+      if (token != null) {
+        await Supabase.instance.client
+            .from('profiles')
+            .update({'fcm_token': token})
+            .eq('id', user.id);
+      }
+
+      // Setup token refresh listener
+      messaging.onTokenRefresh.listen((newToken) async {
+        await Supabase.instance.client
+            .from('profiles')
+            .update({'fcm_token': newToken})
+            .eq('id', user.id);
+      });
+    }
+  } catch (e) {
+    debugPrint('Failed to setup FCM: $e');
+  }
+}
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await dotenv.load(fileName: "lib/core/config/.env");
 
+  await Firebase.initializeApp();
+
   await Supabase.initialize(
     url: dotenv.env['SUPABASE_URL']!,
     anonKey: dotenv.env['SUPABASE_ANON_KEY']!,
   );
+
+  // Setup FCM for already authenticated users
+  await setupFcmForAuthenticatedUsers();
 
   timeago.setLocaleMessages('id', timeago.IdMessages());
 
@@ -88,9 +132,8 @@ final routerProvider = Provider<GoRouter>((ref) {
           StatefulShellBranch(
             routes: [
               GoRoute(
-                path: '/activity',
-                builder: (context, state) =>
-                    const Scaffold(body: Center(child: Text('Activity'))),
+                path: '/chats',
+                builder: (context, state) => const ChatListScreen(),
               ),
             ],
           ),
@@ -133,6 +176,22 @@ final routerProvider = Provider<GoRouter>((ref) {
           return EditProfileScreen(user: user);
         },
       ),
+      GoRoute(
+        path: '/chat/:id',
+        builder: (context, state) {
+          final chatId = state.pathParameters['id']!;
+          final otherUser = state.extra as UserModel;
+          return ChatRoomScreen(chatId: chatId, otherUser: otherUser);
+        },
+      ),
+      GoRoute(
+        path: '/chat/user/:userId',
+        builder: (context, state) {
+          final userId = state.pathParameters['userId']!;
+          final otherUser = state.extra as UserModel;
+          return ChatResolverScreen(otherUserId: userId, otherUser: otherUser);
+        },
+      ),
     ],
   );
 });
@@ -148,5 +207,51 @@ class LivoApp extends ConsumerWidget {
       theme: AppTheme.darkTheme,
       routerConfig: router,
     );
+  }
+}
+
+class ChatResolverScreen extends ConsumerStatefulWidget {
+  final String otherUserId;
+  final UserModel otherUser;
+
+  const ChatResolverScreen({
+    super.key,
+    required this.otherUserId,
+    required this.otherUser,
+  });
+
+  @override
+  ConsumerState<ChatResolverScreen> createState() => _ChatResolverScreenState();
+}
+
+class _ChatResolverScreenState extends ConsumerState<ChatResolverScreen> {
+  @override
+  void initState() {
+    super.initState();
+    _resolveChat();
+  }
+
+  Future<void> _resolveChat() async {
+    try {
+      final chatId = await ref
+          .read(chatRepositoryProvider)
+          .createChat(widget.otherUserId);
+
+      if (mounted) {
+        context.pushReplacement('/chat/$chatId', extra: widget.otherUser);
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Error: $e')));
+        context.pop();
+      }
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return const Scaffold(body: Center(child: CircularProgressIndicator()));
   }
 }

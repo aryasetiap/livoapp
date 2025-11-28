@@ -9,7 +9,7 @@ part of 'user_model.dart';
 UserModel _$UserModelFromJson(Map<String, dynamic> json) => UserModel(
   id: json['id'] as String,
   username: json['username'] as String,
-  email: json['email'] as String,
+  email: json['email'] as String?,
   bio: json['bio'] as String?,
   avatarUrl: json['avatar_url'] as String?,
   createdAt: DateTime.parse(json['created_at'] as String),

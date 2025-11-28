@@ -236,29 +236,76 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
           else
             SizedBox(
               width: double.infinity,
-              child: ElevatedButton(
-                onPressed: _isFollowingLoading
-                    ? null
-                    : () => _toggleFollow(user.id, user.isFollowing),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: user.isFollowing
-                      ? Colors.grey.shade800
-                      : Theme.of(context).colorScheme.primary,
-                  foregroundColor: Colors.white,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                ),
-                child: _isFollowingLoading
-                    ? const SizedBox(
-                        width: 16,
-                        height: 16,
-                        child: CircularProgressIndicator(
-                          strokeWidth: 2,
-                          color: Colors.white,
+              child: Row(
+                children: [
+                  Expanded(
+                    child: ElevatedButton(
+                      onPressed: _isFollowingLoading
+                          ? null
+                          : () => _toggleFollow(user.id, user.isFollowing),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: user.isFollowing
+                            ? Colors.grey.shade800
+                            : Theme.of(context).colorScheme.primary,
+                        foregroundColor: Colors.white,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8),
                         ),
-                      )
-                    : Text(user.isFollowing ? 'Mengikuti' : 'Ikuti'),
+                      ),
+                      child: _isFollowingLoading
+                          ? const SizedBox(
+                              width: 16,
+                              height: 16,
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2,
+                                color: Colors.white,
+                              ),
+                            )
+                          : Text(user.isFollowing ? 'Mengikuti' : 'Ikuti'),
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: OutlinedButton(
+                      onPressed: () async {
+                        // Create or get chat
+                        // We need a provider or repository access here
+                        // For now, let's just push to a route that handles creation or check
+                        // Or better, call createChat here.
+                        // But we don't have ref here easily without Consumer.
+                        // We are in a ConsumerState, so we have ref.
+
+                        // We need to import ChatRepository
+                        // Let's assume we will add the import
+                        // But wait, I can't add import with replace_file_content easily if it's far away.
+                        // I should use multi_replace to add import and button.
+
+                        // For now, let's just navigate to a "create chat" route or similar?
+                        // No, let's do it properly.
+
+                        // I'll use context.push('/chat/create?userId=${user.id}') or similar?
+                        // Or just push to chat room and let it handle creation?
+                        // The ChatRoomScreen takes chatId.
+                        // So we need to get chatId first.
+
+                        // Let's add a loading state for this button too?
+                        // Or just navigate to a generic /chat/user/:userId route that resolves the chat ID?
+                        // That seems cleaner for UI.
+                        context.push('/chat/user/${user.id}', extra: user);
+                      },
+                      style: OutlinedButton.styleFrom(
+                        side: BorderSide(color: Colors.grey.shade700),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                      ),
+                      child: const Text(
+                        'Pesan',
+                        style: TextStyle(color: Colors.white),
+                      ),
+                    ),
+                  ),
+                ],
               ),
             ),
         ],

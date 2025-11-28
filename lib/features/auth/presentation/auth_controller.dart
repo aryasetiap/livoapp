@@ -13,12 +13,18 @@ class AuthController extends StateNotifier<AsyncValue<void>> {
 
   Future<void> signIn({required String email, required String password}) async {
     state = const AsyncValue.loading();
-    state = await AsyncValue.guard(
-      () => _authRepository.signInWithEmailAndPassword(
+    state = await AsyncValue.guard(() async {
+      final result = await _authRepository.signInWithEmailAndPassword(
         email: email,
         password: password,
-      ),
-    );
+      );
+
+      // Save FCM token after successful sign in
+      if (result.user != null) {
+        await _authRepository.saveFcmToken();
+        await _authRepository.setupFcmListeners();
+      }
+    });
   }
 
   Future<void> signUp({
@@ -27,13 +33,19 @@ class AuthController extends StateNotifier<AsyncValue<void>> {
     required String username,
   }) async {
     state = const AsyncValue.loading();
-    state = await AsyncValue.guard(
-      () => _authRepository.signUpWithEmailAndPassword(
+    state = await AsyncValue.guard(() async {
+      final result = await _authRepository.signUpWithEmailAndPassword(
         email: email,
         password: password,
         username: username,
-      ),
-    );
+      );
+
+      // Save FCM token after successful sign up
+      if (result.user != null) {
+        await _authRepository.saveFcmToken();
+        await _authRepository.setupFcmListeners();
+      }
+    });
   }
 
   Future<void> signOut() async {

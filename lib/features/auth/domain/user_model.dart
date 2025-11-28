@@ -6,7 +6,7 @@ part 'user_model.g.dart';
 class UserModel {
   final String id;
   final String username;
-  final String email;
+  final String? email; // Made nullable
   final String? bio;
   @JsonKey(name: 'avatar_url')
   final String? avatarUrl;
@@ -21,7 +21,7 @@ class UserModel {
   UserModel({
     required this.id,
     required this.username,
-    required this.email,
+    this.email, // Optional
     this.bio,
     this.avatarUrl,
     required this.createdAt,
@@ -31,13 +31,12 @@ class UserModel {
   });
 
   factory UserModel.fromJson(Map<String, dynamic> json) {
-    // Handle counts from Supabase count aggregation if available
-    // Note: This logic might need adjustment based on exact query structure
     return _$UserModelFromJson(json);
   }
 
   UserModel copyWith({
     String? username,
+    String? email,
     String? bio,
     String? avatarUrl,
     int? followersCount,
@@ -47,7 +46,7 @@ class UserModel {
     return UserModel(
       id: id,
       username: username ?? this.username,
-      email: email,
+      email: email ?? this.email,
       bio: bio ?? this.bio,
       avatarUrl: avatarUrl ?? this.avatarUrl,
       createdAt: createdAt,

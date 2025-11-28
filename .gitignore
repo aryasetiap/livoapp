@@ -45,8 +45,27 @@ app.*.map.json
 /android/app/release
 
 .claude/
-.env
+# Binary executables
+*.exe
+
+# Claude configuration
 .mcp.json
-CLAUDE.md 
+
+# Environment variables
+.env
+
+# Firebase configuration (HIGHLY SENSITIVE)
+google-services.json
+GoogleService-Info.plist
+/android/app/google-services.json
+/ios/Runner/GoogleService-Info.plist
+
+# Flutter generated files
+/windows/flutter/ephemeral/
+**/flutter/ephemeral/
+**/flutter/.plugin_symlinks/
+
+# Documentation (uncomment if you want to track them)
+CLAUDE.md
 PLAN.md
 SPEC.md

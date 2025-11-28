@@ -54,9 +54,9 @@ class ScaffoldWithNavBar extends StatelessWidget {
             _buildCenterNavItem(context),
             _buildNavItem(
               context,
-              icon: Icons.favorite_border_rounded,
-              selectedIcon: Icons.favorite_rounded,
-              label: 'Activity',
+              icon: Icons.chat_bubble_outline_rounded,
+              selectedIcon: Icons.chat_bubble_rounded,
+              label: 'Chat',
               isSelected: navigationShell.currentIndex == 3,
             ),
             _buildNavItem(

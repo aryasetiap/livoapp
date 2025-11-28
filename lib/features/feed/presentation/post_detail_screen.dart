@@ -43,9 +43,11 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
       // Refresh comments
       ref.invalidate(commentsProvider(widget.post.id));
     } catch (e) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text('Gagal mengirim komentar: $e')));
+      if (mounted) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Gagal mengirim komentar: $e')));
+      }
     } finally {
       if (mounted) {
         setState(() {
