@@ -67,14 +67,24 @@ class PostRepository {
     return imageUrl;
   }
 
-  Future<List<PostModel>> getPosts({int page = 0, int limit = 10}) async {
+  Future<List<PostModel>> getPosts({
+    int page = 0,
+    int limit = 10,
+    List<String>? filterUserIds,
+  }) async {
     final from = page * limit;
     final to = from + limit - 1;
     final userId = _supabase.auth.currentUser?.id;
 
-    final response = await _supabase
+    var query = _supabase
         .from('posts')
-        .select('*, profiles(username, avatar_url), likes(count)')
+        .select('*, profiles(username, avatar_url), likes(count)');
+
+    if (filterUserIds != null) {
+      query = query.filter('user_id', 'in', filterUserIds);
+    }
+
+    final response = await query
         .order('created_at', ascending: false)
         .range(from, to);
 
@@ -86,7 +96,7 @@ class PostRepository {
           .from('likes')
           .select('post_id')
           .eq('user_id', userId)
-          .inFilter('post_id', postIds);
+          .filter('post_id', 'in', postIds);
 
       final likedPostIds = (likedResponse as List)
           .map((e) => e['post_id'] as String)
@@ -127,6 +137,17 @@ class PostRepository {
         .order('created_at', ascending: true);
 
     return response.map((json) => CommentModel.fromJson(json)).toList();
+  }
+
+  Future<List<PostModel>> getUserPosts(String userId) async {
+    final response = await _supabase
+        .from('posts')
+        .select('*, profiles(username, avatar_url), likes(count)')
+        .eq('user_id', userId)
+        .order('created_at', ascending: false);
+
+    final posts = response.map((json) => PostModel.fromJson(json)).toList();
+    return posts;
   }
 
   Future<void> addComment(String postId, String content) async {

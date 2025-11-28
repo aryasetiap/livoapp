@@ -46,9 +46,9 @@ class ScaffoldWithNavBar extends StatelessWidget {
             ),
             _buildNavItem(
               context,
-              icon: Icons.explore_outlined,
-              selectedIcon: Icons.explore_rounded,
-              label: 'Explore',
+              icon: Icons.search_outlined,
+              selectedIcon: Icons.search_rounded,
+              label: 'Search',
               isSelected: navigationShell.currentIndex == 1,
             ),
             _buildCenterNavItem(context),

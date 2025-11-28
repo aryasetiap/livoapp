@@ -14,6 +14,10 @@ import 'features/onboarding/presentation/onboarding_screen.dart';
 import 'features/navigation/presentation/scaffold_with_navbar.dart';
 import 'features/feed/presentation/post_detail_screen.dart';
 import 'features/feed/domain/post_model.dart';
+import 'features/profile/presentation/profile_screen.dart';
+import 'features/profile/presentation/edit_profile_screen.dart';
+import 'features/search/presentation/search_screen.dart';
+import 'features/auth/domain/user_model.dart';
 
 import 'package:timeago/timeago.dart' as timeago;
 
@@ -69,8 +73,7 @@ final routerProvider = Provider<GoRouter>((ref) {
             routes: [
               GoRoute(
                 path: '/explore',
-                builder: (context, state) =>
-                    const Scaffold(body: Center(child: Text('Explore'))),
+                builder: (context, state) => const SearchScreen(),
               ),
             ],
           ),
@@ -95,8 +98,7 @@ final routerProvider = Provider<GoRouter>((ref) {
             routes: [
               GoRoute(
                 path: '/profile',
-                builder: (context, state) =>
-                    const Scaffold(body: Center(child: Text('Profile'))),
+                builder: (context, state) => const ProfileScreen(),
               ),
             ],
           ),
@@ -111,6 +113,24 @@ final routerProvider = Provider<GoRouter>((ref) {
         builder: (context, state) {
           final post = state.extra as PostModel;
           return PostDetailScreen(post: post);
+        },
+      ),
+      GoRoute(
+        path: '/profile/:id',
+        builder: (context, state) {
+          final userId = state.pathParameters['id'];
+          return ProfileScreen(userId: userId);
+        },
+      ),
+      GoRoute(
+        path: '/search',
+        builder: (context, state) => const SearchScreen(),
+      ),
+      GoRoute(
+        path: '/edit-profile',
+        builder: (context, state) {
+          final user = state.extra as UserModel;
+          return EditProfileScreen(user: user);
         },
       ),
     ],

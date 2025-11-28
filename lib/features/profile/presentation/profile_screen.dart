@@ -1,0 +1,280 @@
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
+import 'package:cached_network_image/cached_network_image.dart';
+import 'package:livoapp/features/auth/data/auth_repository.dart';
+import 'package:livoapp/features/auth/domain/user_model.dart';
+import 'package:livoapp/features/feed/data/post_repository.dart';
+import 'package:livoapp/features/feed/domain/post_model.dart';
+
+final profileProvider = FutureProvider.family<UserModel, String>((ref, userId) {
+  return ref.watch(authRepositoryProvider).getProfile(userId);
+});
+
+final userPostsProvider = FutureProvider.family<List<PostModel>, String>((
+  ref,
+  userId,
+) {
+  return ref.watch(postRepositoryProvider).getUserPosts(userId);
+});
+
+class ProfileScreen extends ConsumerStatefulWidget {
+  final String? userId;
+
+  const ProfileScreen({super.key, this.userId});
+
+  @override
+  ConsumerState<ProfileScreen> createState() => _ProfileScreenState();
+}
+
+class _ProfileScreenState extends ConsumerState<ProfileScreen> {
+  bool _isFollowingLoading = false;
+
+  Future<void> _toggleFollow(String userId, bool isFollowing) async {
+    setState(() {
+      _isFollowingLoading = true;
+    });
+
+    try {
+      if (isFollowing) {
+        await ref.read(authRepositoryProvider).unfollowUser(userId);
+      } else {
+        await ref.read(authRepositoryProvider).followUser(userId);
+      }
+      ref.invalidate(profileProvider(userId));
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Gagal mengubah status follow: $e')),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isFollowingLoading = false;
+        });
+      }
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final currentUserId = ref.watch(authRepositoryProvider).currentUser?.id;
+    final targetUserId = widget.userId ?? currentUserId;
+
+    if (targetUserId == null) {
+      return const Scaffold(body: Center(child: Text('User tidak ditemukan')));
+    }
+
+    final profileState = ref.watch(profileProvider(targetUserId));
+    final postsState = ref.watch(userPostsProvider(targetUserId));
+
+    return Scaffold(
+      appBar: AppBar(
+        title: Text(
+          widget.userId == null ? 'Profil Saya' : 'Profil',
+          style: const TextStyle(fontWeight: FontWeight.bold),
+        ),
+        actions: [
+          if (widget.userId == null)
+            IconButton(
+              onPressed: () {
+                ref.read(authRepositoryProvider).signOut();
+              },
+              icon: const Icon(Icons.logout_rounded, color: Colors.red),
+            ),
+        ],
+      ),
+      body: RefreshIndicator(
+        onRefresh: () async {
+          ref.invalidate(profileProvider(targetUserId));
+          ref.invalidate(userPostsProvider(targetUserId));
+        },
+        child: CustomScrollView(
+          physics: const AlwaysScrollableScrollPhysics(),
+          slivers: [
+            SliverToBoxAdapter(
+              child: profileState.when(
+                data: (user) =>
+                    _buildProfileHeader(context, user, currentUserId),
+                loading: () => const Padding(
+                  padding: EdgeInsets.all(32.0),
+                  child: Center(child: CircularProgressIndicator()),
+                ),
+                error: (error, stack) => Padding(
+                  padding: const EdgeInsets.all(32.0),
+                  child: Center(child: Text('Error: $error')),
+                ),
+              ),
+            ),
+            SliverPadding(
+              padding: const EdgeInsets.all(2.0),
+              sliver: postsState.when(
+                data: (posts) {
+                  if (posts.isEmpty) {
+                    return const SliverToBoxAdapter(
+                      child: Padding(
+                        padding: EdgeInsets.all(32.0),
+                        child: Center(
+                          child: Text(
+                            'Belum ada postingan',
+                            style: TextStyle(color: Colors.grey),
+                          ),
+                        ),
+                      ),
+                    );
+                  }
+                  return SliverGrid(
+                    gridDelegate:
+                        const SliverGridDelegateWithFixedCrossAxisCount(
+                          crossAxisCount: 3,
+                          crossAxisSpacing: 2,
+                          mainAxisSpacing: 2,
+                        ),
+                    delegate: SliverChildBuilderDelegate((context, index) {
+                      final post = posts[index];
+                      return GestureDetector(
+                        onTap: () {
+                          context.push('/post/${post.id}', extra: post);
+                        },
+                        child: CachedNetworkImage(
+                          imageUrl: post.imageUrl,
+                          fit: BoxFit.cover,
+                          placeholder: (context, url) =>
+                              Container(color: Colors.grey.shade900),
+                          errorWidget: (context, url, error) => Container(
+                            color: Colors.grey.shade900,
+                            child: const Icon(Icons.error),
+                          ),
+                        ),
+                      );
+                    }, childCount: posts.length),
+                  );
+                },
+                loading: () => const SliverToBoxAdapter(
+                  child: Padding(
+                    padding: EdgeInsets.all(32.0),
+                    child: Center(child: CircularProgressIndicator()),
+                  ),
+                ),
+                error: (error, stack) => SliverToBoxAdapter(
+                  child: Center(child: Text('Error: $error')),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildProfileHeader(
+    BuildContext context,
+    UserModel user,
+    String? currentUserId,
+  ) {
+    final isMe = currentUserId == user.id;
+
+    return Padding(
+      padding: const EdgeInsets.all(16.0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              CircleAvatar(
+                radius: 40,
+                backgroundImage: user.avatarUrl != null
+                    ? CachedNetworkImageProvider(user.avatarUrl!)
+                    : null,
+                child: user.avatarUrl == null
+                    ? const Icon(Icons.person, size: 40)
+                    : null,
+              ),
+              const SizedBox(width: 24),
+              Expanded(
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceAround,
+                  children: [
+                    _buildStatItem('Postingan', '0'), // Placeholder for now
+                    _buildStatItem('Pengikut', '${user.followersCount}'),
+                    _buildStatItem('Mengikuti', '${user.followingCount}'),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
+          Text(
+            user.username,
+            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+          ),
+          if (user.bio != null && user.bio!.isNotEmpty) ...[
+            const SizedBox(height: 4),
+            Text(user.bio!),
+          ],
+          const SizedBox(height: 16),
+          if (isMe)
+            SizedBox(
+              width: double.infinity,
+              child: OutlinedButton(
+                onPressed: () {
+                  context.push('/edit-profile', extra: user);
+                },
+                style: OutlinedButton.styleFrom(
+                  side: BorderSide(color: Colors.grey.shade700),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                ),
+                child: const Text(
+                  'Edit Profil',
+                  style: TextStyle(color: Colors.white),
+                ),
+              ),
+            )
+          else
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton(
+                onPressed: _isFollowingLoading
+                    ? null
+                    : () => _toggleFollow(user.id, user.isFollowing),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: user.isFollowing
+                      ? Colors.grey.shade800
+                      : Theme.of(context).colorScheme.primary,
+                  foregroundColor: Colors.white,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                ),
+                child: _isFollowingLoading
+                    ? const SizedBox(
+                        width: 16,
+                        height: 16,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          color: Colors.white,
+                        ),
+                      )
+                    : Text(user.isFollowing ? 'Mengikuti' : 'Ikuti'),
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildStatItem(String label, String value) {
+    return Column(
+      children: [
+        Text(
+          value,
+          style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+        ),
+        Text(label, style: const TextStyle(color: Colors.grey)),
+      ],
+    );
+  }
+}

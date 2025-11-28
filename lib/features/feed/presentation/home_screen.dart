@@ -1,23 +1,36 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:livoapp/features/auth/data/auth_repository.dart'; // Added import
 import 'package:livoapp/features/auth/presentation/auth_controller.dart';
 import 'package:livoapp/features/feed/data/post_repository.dart';
 import 'package:livoapp/features/feed/domain/post_model.dart';
 import 'package:livoapp/features/feed/presentation/widgets/post_item.dart';
 
+enum FeedMode { global, following }
+
+final feedModeProvider = StateProvider<FeedMode>((ref) => FeedMode.global);
+
 final feedControllerProvider =
     StateNotifierProvider<FeedController, AsyncValue<List<PostModel>>>((ref) {
-      return FeedController(ref.watch(postRepositoryProvider));
+      final mode = ref.watch(feedModeProvider);
+      return FeedController(
+        ref.watch(postRepositoryProvider),
+        ref.watch(authRepositoryProvider),
+        mode,
+      );
     });
 
 class FeedController extends StateNotifier<AsyncValue<List<PostModel>>> {
-  final PostRepository _repository;
+  final PostRepository _postRepository;
+  final AuthRepository _authRepository;
+  final FeedMode _mode;
   int _page = 0;
   final int _limit = 10;
   bool _hasMore = true;
 
-  FeedController(this._repository) : super(const AsyncValue.loading()) {
+  FeedController(this._postRepository, this._authRepository, this._mode)
+    : super(const AsyncValue.loading()) {
     loadInitialPosts();
   }
 
@@ -26,7 +39,23 @@ class FeedController extends StateNotifier<AsyncValue<List<PostModel>>> {
       _page = 0;
       _hasMore = true;
       state = const AsyncValue.loading();
-      final posts = await _repository.getPosts(page: _page, limit: _limit);
+
+      List<String>? filterUserIds;
+      if (_mode == FeedMode.following) {
+        filterUserIds = await _authRepository.getFollowedUserIds();
+        if (filterUserIds.isEmpty) {
+          // If following no one, return empty list immediately
+          state = const AsyncValue.data([]);
+          _hasMore = false;
+          return;
+        }
+      }
+
+      final posts = await _postRepository.getPosts(
+        page: _page,
+        limit: _limit,
+        filterUserIds: filterUserIds,
+      );
       state = AsyncValue.data(posts);
       if (posts.length < _limit) _hasMore = false;
     } catch (e, st) {
@@ -40,7 +69,21 @@ class FeedController extends StateNotifier<AsyncValue<List<PostModel>>> {
     try {
       _page++;
       final currentPosts = state.value ?? [];
-      final newPosts = await _repository.getPosts(page: _page, limit: _limit);
+
+      List<String>? filterUserIds;
+      if (_mode == FeedMode.following) {
+        filterUserIds = await _authRepository.getFollowedUserIds();
+        if (filterUserIds.isEmpty) {
+          _hasMore = false;
+          return;
+        }
+      }
+
+      final newPosts = await _postRepository.getPosts(
+        page: _page,
+        limit: _limit,
+        filterUserIds: filterUserIds,
+      );
 
       if (newPosts.isEmpty) {
         _hasMore = false;
@@ -91,6 +134,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   @override
   Widget build(BuildContext context) {
     final feedState = ref.watch(feedControllerProvider);
+    final feedMode = ref.watch(feedModeProvider);
 
     return Scaffold(
       body: Container(
@@ -153,6 +197,30 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                     icon: const Icon(Icons.logout_rounded),
                   ),
                 ],
+                bottom: PreferredSize(
+                  preferredSize: const Size.fromHeight(48),
+                  child: Padding(
+                    padding: const EdgeInsets.only(bottom: 8.0),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        _buildModeButton(
+                          context,
+                          'Global',
+                          FeedMode.global,
+                          feedMode,
+                        ),
+                        const SizedBox(width: 16),
+                        _buildModeButton(
+                          context,
+                          'Mengikuti',
+                          FeedMode.following,
+                          feedMode,
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
               ),
               SliverToBoxAdapter(
                 child: SizedBox(
@@ -247,6 +315,41 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               ),
               const SliverPadding(padding: EdgeInsets.only(bottom: 100)),
             ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildModeButton(
+    BuildContext context,
+    String label,
+    FeedMode mode,
+    FeedMode currentMode,
+  ) {
+    final isSelected = mode == currentMode;
+    return GestureDetector(
+      onTap: () {
+        ref.read(feedModeProvider.notifier).state = mode;
+      },
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        decoration: BoxDecoration(
+          color: isSelected
+              ? Theme.of(context).colorScheme.primary
+              : Colors.transparent,
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(
+            color: isSelected
+                ? Theme.of(context).colorScheme.primary
+                : Colors.grey.shade600,
+          ),
+        ),
+        child: Text(
+          label,
+          style: TextStyle(
+            color: isSelected ? Colors.white : Colors.grey.shade400,
+            fontWeight: FontWeight.bold,
           ),
         ),
       ),
