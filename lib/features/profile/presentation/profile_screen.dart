@@ -6,6 +6,7 @@ import 'package:livoapp/features/auth/data/auth_repository.dart';
 import 'package:livoapp/features/auth/domain/user_model.dart';
 import 'package:livoapp/features/feed/data/post_repository.dart';
 import 'package:livoapp/features/feed/domain/post_model.dart';
+import 'package:livoapp/features/moderation/data/moderation_repository.dart';
 
 final profileProvider = FutureProvider.family<UserModel, String>((ref, userId) {
   return ref.watch(authRepositoryProvider).getProfile(userId);
@@ -76,6 +77,67 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
           style: const TextStyle(fontWeight: FontWeight.bold),
         ),
         actions: [
+          if (widget.userId != null && widget.userId != currentUserId)
+            Consumer(
+              builder: (context, ref, child) {
+                return FutureBuilder<bool>(
+                  future: ref
+                      .watch(moderationRepositoryProvider)
+                      .isUserBlocked(widget.userId!),
+                  builder: (context, snapshot) {
+                    final blocked = snapshot.data ?? false;
+                    return IconButton(
+                      onPressed: () async {
+                        try {
+                          if (blocked) {
+                            await ref
+                                .read(moderationRepositoryProvider)
+                                .unblockUser(widget.userId!);
+                            if (context.mounted) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(
+                                  content: Text('User dibatalkan blokirnya'),
+                                  backgroundColor: Colors.green,
+                                ),
+                              );
+                            }
+                          } else {
+                            await ref
+                                .read(moderationRepositoryProvider)
+                                .blockUser(widget.userId!);
+                            if (context.mounted) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(
+                                  content: Text('User diblokir'),
+                                  backgroundColor: Colors.orange,
+                                ),
+                              );
+                            }
+                          }
+                          // Refresh profile to update state
+                          ref.invalidate(profileProvider(widget.userId!));
+                          // Also invalidate posts to filter out if blocked
+                          ref.invalidate(userPostsProvider(widget.userId!));
+                        } catch (e) {
+                          if (context.mounted) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content: Text('Gagal memperbarui status: $e'),
+                              ),
+                            );
+                          }
+                        }
+                      },
+                      icon: Icon(
+                        blocked ? Icons.block : Icons.person_off_outlined,
+                        color: blocked ? Colors.grey : Colors.red,
+                      ),
+                      tooltip: blocked ? 'Batal blokir' : 'Blokir user',
+                    );
+                  },
+                );
+              },
+            ),
           if (widget.userId == null)
             IconButton(
               onPressed: () {

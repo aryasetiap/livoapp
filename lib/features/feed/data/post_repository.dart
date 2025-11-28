@@ -5,17 +5,19 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:uuid/uuid.dart';
 import 'package:livoapp/features/feed/domain/post_model.dart';
 import 'package:livoapp/features/feed/domain/comment_model.dart';
+import 'package:livoapp/features/moderation/data/moderation_repository.dart';
 
 import 'package:flutter_image_compress/flutter_image_compress.dart';
 
 final postRepositoryProvider = Provider<PostRepository>((ref) {
-  return PostRepository(Supabase.instance.client);
+  return PostRepository(Supabase.instance.client, ref.read(moderationRepositoryProvider));
 });
 
 class PostRepository {
   final SupabaseClient _supabase;
+  final ModerationRepository _moderationRepository;
 
-  PostRepository(this._supabase);
+  PostRepository(this._supabase, this._moderationRepository);
 
   Future<void> createPost({
     required String userId,
@@ -90,8 +92,11 @@ class PostRepository {
 
     final posts = response.map((json) => PostModel.fromJson(json)).toList();
 
-    if (userId != null && posts.isNotEmpty) {
-      final postIds = posts.map((p) => p.id).toList();
+    // Apply moderation filter - remove posts from blocked users
+    final filteredPosts = await _moderationRepository.filterBlockedUsersFromPosts(posts);
+
+    if (userId != null && filteredPosts.isNotEmpty) {
+      final postIds = filteredPosts.map((p) => p.id).toList();
       final likedResponse = await _supabase
           .from('likes')
           .select('post_id')
@@ -102,12 +107,12 @@ class PostRepository {
           .map((e) => e['post_id'] as String)
           .toSet();
 
-      return posts
+      return filteredPosts
           .map((p) => p.copyWith(isLiked: likedPostIds.contains(p.id)))
           .toList();
     }
 
-    return posts;
+    return filteredPosts;
   }
 
   Future<void> toggleLike(String postId) async {
