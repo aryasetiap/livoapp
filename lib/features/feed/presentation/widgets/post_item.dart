@@ -1,12 +1,59 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:livoapp/features/feed/data/post_repository.dart';
 import 'package:livoapp/features/feed/domain/post_model.dart';
 import 'package:timeago/timeago.dart' as timeago;
+import 'package:go_router/go_router.dart';
 
-class PostItem extends StatelessWidget {
+class PostItem extends ConsumerStatefulWidget {
   final PostModel post;
+  final bool isDetail;
 
-  const PostItem({super.key, required this.post});
+  const PostItem({super.key, required this.post, this.isDetail = false});
+
+  @override
+  ConsumerState<PostItem> createState() => _PostItemState();
+}
+
+class _PostItemState extends ConsumerState<PostItem> {
+  late bool _isLiked;
+  late int _likeCount;
+
+  @override
+  void initState() {
+    super.initState();
+    _isLiked = widget.post.isLiked;
+    _likeCount = widget.post.likeCount;
+  }
+
+  @override
+  void didUpdateWidget(PostItem oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.post != widget.post) {
+      _isLiked = widget.post.isLiked;
+      _likeCount = widget.post.likeCount;
+    }
+  }
+
+  Future<void> _toggleLike() async {
+    setState(() {
+      _isLiked = !_isLiked;
+      _likeCount += _isLiked ? 1 : -1;
+    });
+
+    try {
+      await ref.read(postRepositoryProvider).toggleLike(widget.post.id);
+    } catch (e) {
+      // Revert if failed
+      if (mounted) {
+        setState(() {
+          _isLiked = !_isLiked;
+          _likeCount += _isLiked ? 1 : -1;
+        });
+      }
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -54,10 +101,10 @@ class PostItem extends StatelessWidget {
                     child: CircleAvatar(
                       radius: 18,
                       backgroundColor: Colors.grey.shade800,
-                      backgroundImage: post.avatarUrl != null
-                          ? CachedNetworkImageProvider(post.avatarUrl!)
+                      backgroundImage: widget.post.avatarUrl != null
+                          ? CachedNetworkImageProvider(widget.post.avatarUrl!)
                           : null,
-                      child: post.avatarUrl == null
+                      child: widget.post.avatarUrl == null
                           ? const Icon(
                               Icons.person,
                               color: Colors.white,
@@ -73,7 +120,7 @@ class PostItem extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        post.username ?? 'User',
+                        widget.post.username ?? 'User',
                         style: const TextStyle(
                           fontWeight: FontWeight.bold,
                           color: Colors.white,
@@ -81,7 +128,7 @@ class PostItem extends StatelessWidget {
                         ),
                       ),
                       Text(
-                        timeago.format(post.createdAt, locale: 'id'),
+                        timeago.format(widget.post.createdAt, locale: 'id'),
                         style: TextStyle(
                           color: Colors.grey.shade400,
                           fontSize: 12,
@@ -102,9 +149,9 @@ class PostItem extends StatelessWidget {
           ),
 
           // Image
-          if (post.imageUrl.isNotEmpty)
+          if (widget.post.imageUrl.isNotEmpty)
             CachedNetworkImage(
-              imageUrl: post.imageUrl,
+              imageUrl: widget.post.imageUrl,
               width: double.infinity,
               fit: BoxFit.cover,
               placeholder: (context, url) => Container(
@@ -124,16 +171,37 @@ class PostItem extends StatelessWidget {
             padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
             child: Row(
               children: [
-                IconButton(
-                  onPressed: () {},
-                  icon: const Icon(
-                    Icons.favorite_border_rounded,
-                    color: Colors.white,
-                    size: 28,
-                  ),
+                Row(
+                  children: [
+                    IconButton(
+                      onPressed: _toggleLike,
+                      icon: Icon(
+                        _isLiked
+                            ? Icons.favorite_rounded
+                            : Icons.favorite_border_rounded,
+                        color: _isLiked ? Colors.red : Colors.white,
+                        size: 28,
+                      ),
+                    ),
+                    if (_likeCount > 0)
+                      Text(
+                        '$_likeCount',
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                  ],
                 ),
                 IconButton(
-                  onPressed: () {},
+                  onPressed: widget.isDetail
+                      ? null
+                      : () {
+                          context.push(
+                            '/post/${widget.post.id}',
+                            extra: widget.post,
+                          );
+                        },
                   icon: const Icon(
                     Icons.chat_bubble_outline_rounded,
                     color: Colors.white,
@@ -162,7 +230,7 @@ class PostItem extends StatelessWidget {
           ),
 
           // Caption
-          if (post.caption != null && post.caption!.isNotEmpty)
+          if (widget.post.caption != null && widget.post.caption!.isNotEmpty)
             Padding(
               padding: const EdgeInsets.only(left: 16, right: 16, bottom: 16),
               child: RichText(
@@ -170,10 +238,10 @@ class PostItem extends StatelessWidget {
                   style: const TextStyle(color: Colors.white),
                   children: [
                     TextSpan(
-                      text: '${post.username ?? 'User'} ',
+                      text: '${widget.post.username ?? 'User'} ',
                       style: const TextStyle(fontWeight: FontWeight.bold),
                     ),
-                    TextSpan(text: post.caption),
+                    TextSpan(text: widget.post.caption),
                   ],
                 ),
               ),

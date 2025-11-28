@@ -12,6 +12,8 @@ import 'features/feed/presentation/home_screen.dart';
 import 'features/feed/presentation/create_post_screen.dart';
 import 'features/onboarding/presentation/onboarding_screen.dart';
 import 'features/navigation/presentation/scaffold_with_navbar.dart';
+import 'features/feed/presentation/post_detail_screen.dart';
+import 'features/feed/domain/post_model.dart';
 
 import 'package:timeago/timeago.dart' as timeago;
 
@@ -103,6 +105,13 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/create-post',
         builder: (context, state) => const CreatePostScreen(),
+      ),
+      GoRoute(
+        path: '/post/:id',
+        builder: (context, state) {
+          final post = state.extra as PostModel;
+          return PostDetailScreen(post: post);
+        },
       ),
     ],
   );
