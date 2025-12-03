@@ -1,5 +1,5 @@
 name: livoapp
-description: "A new Flutter project."
+description: "Livo - Social media application for sharing photos and videos"
 publish_to: 'none'
 version: 1.0.0+1
 
@@ -37,9 +37,19 @@ dev_dependencies:
   build_runner: ^2.4.13
   riverpod_generator: ^2.6.3
   json_serializable: ^6.9.0
+  flutter_launcher_icons: ^0.14.1
 
 flutter:
   uses-material-design: true
   assets:
     - lib/core/config/.env
     - assets/images/
+    - livo.jpg
+
+# Flutter Launcher Icons configuration
+flutter_launcher_icons:
+  android: "launcher_icon"
+  ios: false
+  image_path: "livo.jpg"
+  adaptive_icon_background: "#FFFFFF"
+  adaptive_icon_foreground: "livo.jpg"

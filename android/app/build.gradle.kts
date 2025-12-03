@@ -29,6 +29,10 @@ android {
         targetSdk = flutter.targetSdkVersion
         versionCode = flutter.versionCode
         versionName = flutter.versionName
+
+        // Add app metadata for Play Store
+        resValue("string", "app_name", "Livo")
+        resValue("string", "app_description", "Livo - Social media untuk berbagi foto dan video singkat")
     }
 
     buildTypes {
