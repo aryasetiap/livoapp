@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:livoapp/features/auth/data/auth_repository.dart'; // Added import
-import 'package:livoapp/features/auth/presentation/auth_controller.dart';
+
 import 'package:livoapp/features/feed/data/post_repository.dart';
 import 'package:livoapp/features/feed/domain/post_model.dart';
 import 'package:livoapp/features/feed/presentation/widgets/post_item.dart';
@@ -157,72 +157,27 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                 backgroundColor: Theme.of(
                   context,
                 ).colorScheme.surface.withValues(alpha: 0.8),
-                title: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Image.asset(
-                      'assets/images/livo_logo_square.png',
-                      height: 32,
-                      width: 32,
-                      errorBuilder: (context, error, stackTrace) {
-                        return Icon(
-                          Icons.image_not_supported_rounded,
-                          color: Theme.of(context).colorScheme.primary,
-                          size: 32,
-                        );
-                      },
-                    ),
-                    const SizedBox(width: 8),
-                    Text(
-                      'Livo',
-                      style: TextStyle(
-                        fontWeight: FontWeight.w900,
-                        fontSize: 28,
-                        color: Theme.of(context).colorScheme.primary,
-                        letterSpacing: -1,
-                      ),
-                    ),
-                  ],
+                title: Image.asset(
+                  'assets/images/livo_logo_square.png',
+                  height: 38, // Slightly larger logo
+                  width: 38,
+                  errorBuilder: (context, error, stackTrace) {
+                    return Icon(
+                      Icons.image_not_supported_rounded,
+                      color: Theme.of(context).colorScheme.primary,
+                      size: 38,
+                    );
+                  },
                 ),
                 actions: [
                   IconButton(
                     onPressed: () {
                       context.push('/notifications');
                     },
-                    icon: const Icon(Icons.notifications_none_rounded),
+                    icon: const Icon(Icons.notifications_outlined, size: 28),
                   ),
-                  IconButton(
-                    onPressed: () {
-                      ref.read(authControllerProvider.notifier).signOut();
-                      context.go('/login');
-                    },
-                    icon: const Icon(Icons.logout_rounded),
-                  ),
+                  const SizedBox(width: 8), // Add some spacing at the end
                 ],
-                bottom: PreferredSize(
-                  preferredSize: const Size.fromHeight(48),
-                  child: Padding(
-                    padding: const EdgeInsets.only(bottom: 8.0),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        _buildModeButton(
-                          context,
-                          'Global',
-                          FeedMode.global,
-                          feedMode,
-                        ),
-                        const SizedBox(width: 16),
-                        _buildModeButton(
-                          context,
-                          'Mengikuti',
-                          FeedMode.following,
-                          feedMode,
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
               ),
               SliverToBoxAdapter(
                 child: SizedBox(
@@ -285,6 +240,94 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                         ),
                       );
                     },
+                  ),
+                ),
+              ),
+              SliverToBoxAdapter(
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
+                  child: Container(
+                    height: 48,
+                    decoration: BoxDecoration(
+                      color: Theme.of(context)
+                          .colorScheme
+                          .surfaceContainerHighest
+                          .withValues(alpha: 0.3),
+                      borderRadius: BorderRadius.circular(25),
+                    ),
+                    child: Stack(
+                      children: [
+                        AnimatedAlign(
+                          duration: const Duration(milliseconds: 250),
+                          curve: Curves.easeOutBack,
+                          alignment: feedMode == FeedMode.global
+                              ? Alignment.centerLeft
+                              : Alignment.centerRight,
+                          child: FractionallySizedBox(
+                            widthFactor: 0.5,
+                            child: Container(
+                              margin: const EdgeInsets.all(4),
+                              decoration: BoxDecoration(
+                                color: Theme.of(context).colorScheme.primary,
+                                borderRadius: BorderRadius.circular(21),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: Theme.of(context).colorScheme.primary
+                                        .withValues(alpha: 0.3),
+                                    blurRadius: 8,
+                                    offset: const Offset(0, 2),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ),
+                        Row(
+                          children: [
+                            Expanded(
+                              child: GestureDetector(
+                                onTap: () =>
+                                    ref.read(feedModeProvider.notifier).state =
+                                        FeedMode.global,
+                                behavior: HitTestBehavior.opaque,
+                                child: Center(
+                                  child: Text(
+                                    'Global',
+                                    style: TextStyle(
+                                      color: feedMode == FeedMode.global
+                                          ? Colors.white
+                                          : Colors.grey,
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 15,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ),
+                            Expanded(
+                              child: GestureDetector(
+                                onTap: () =>
+                                    ref.read(feedModeProvider.notifier).state =
+                                        FeedMode.following,
+                                behavior: HitTestBehavior.opaque,
+                                child: Center(
+                                  child: Text(
+                                    'Mengikuti',
+                                    style: TextStyle(
+                                      color: feedMode == FeedMode.following
+                                          ? Colors.white
+                                          : Colors.grey,
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 15,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
                   ),
                 ),
               ),
@@ -357,41 +400,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               ),
               const SliverPadding(padding: EdgeInsets.only(bottom: 100)),
             ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildModeButton(
-    BuildContext context,
-    String label,
-    FeedMode mode,
-    FeedMode currentMode,
-  ) {
-    final isSelected = mode == currentMode;
-    return GestureDetector(
-      onTap: () {
-        ref.read(feedModeProvider.notifier).state = mode;
-      },
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-        decoration: BoxDecoration(
-          color: isSelected
-              ? Theme.of(context).colorScheme.primary
-              : Colors.transparent,
-          borderRadius: BorderRadius.circular(20),
-          border: Border.all(
-            color: isSelected
-                ? Theme.of(context).colorScheme.primary
-                : Colors.grey.shade600,
-          ),
-        ),
-        child: Text(
-          label,
-          style: TextStyle(
-            color: isSelected ? Colors.white : Colors.grey.shade400,
-            fontWeight: FontWeight.bold,
           ),
         ),
       ),
