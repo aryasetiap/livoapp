@@ -255,10 +255,23 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                               child: CircleAvatar(
                                 radius: 32,
                                 backgroundColor: Colors.black,
-                                child: CircleAvatar(
-                                  radius: 30,
-                                  backgroundImage: NetworkImage(
+                                child: ClipOval(
+                                  child: Image.network(
                                     'https://i.pravatar.cc/150?u=story$index',
+                                    width: 60,
+                                    height: 60,
+                                    fit: BoxFit.cover,
+                                    errorBuilder: (context, error, stackTrace) {
+                                      return Container(
+                                        width: 60,
+                                        height: 60,
+                                        color: Colors.grey[800],
+                                        child: const Icon(
+                                          Icons.person_off,
+                                          color: Colors.white54,
+                                        ),
+                                      );
+                                    },
                                   ),
                                 ),
                               ),
@@ -308,9 +321,36 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                 ),
                 error: (error, stack) => SliverFillRemaining(
                   child: Center(
-                    child: Text(
-                      'Error: $error',
-                      style: const TextStyle(color: Colors.red),
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(
+                          Icons.cloud_off_rounded,
+                          size: 64,
+                          color: Theme.of(context).colorScheme.outline,
+                        ),
+                        const SizedBox(height: 16),
+                        Text(
+                          'Gagal memuat postingan',
+                          style: Theme.of(context).textTheme.titleMedium,
+                        ),
+                        const SizedBox(height: 8),
+                        Text(
+                          'Periksa koneksi internet Anda',
+                          style: Theme.of(context).textTheme.bodyMedium
+                              ?.copyWith(
+                                color: Theme.of(context).colorScheme.outline,
+                              ),
+                        ),
+                        const SizedBox(height: 24),
+                        FilledButton.icon(
+                          onPressed: () {
+                            ref.read(feedControllerProvider.notifier).refresh();
+                          },
+                          icon: const Icon(Icons.refresh_rounded),
+                          label: const Text('Coba Lagi'),
+                        ),
+                      ],
                     ),
                   ),
                 ),

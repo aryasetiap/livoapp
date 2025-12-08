@@ -73,7 +73,7 @@ Future<void> main() async {
   );
 
   // Setup FCM for already authenticated users
-  await setupFcmForAuthenticatedUsers();
+  setupFcmForAuthenticatedUsers();
 
   timeago.setLocaleMessages('id', timeago.IdMessages());
 
@@ -85,7 +85,7 @@ final routerProvider = Provider<GoRouter>((ref) {
 
   return GoRouter(
     navigatorKey: rootNavigatorKey,
-    initialLocation: '/home',
+    initialLocation: '/',
     routes: [
       GoRoute(path: '/', builder: (context, state) => const SplashScreen()),
       GoRoute(
