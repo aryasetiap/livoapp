@@ -44,12 +44,12 @@ flutter:
   assets:
     - lib/core/config/.env
     - assets/images/
-    - livo.jpg
+    - lvo.jpg
 
 # Flutter Launcher Icons configuration
 flutter_launcher_icons:
   android: "launcher_icon"
   ios: false
-  image_path: "livo.jpg"
+  image_path: "lvo.jpg"
   adaptive_icon_background: "#FFFFFF"
-  adaptive_icon_foreground: "livo.jpg"
+  adaptive_icon_foreground: "lvo.jpg"

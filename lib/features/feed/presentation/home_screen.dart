@@ -158,7 +158,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                   context,
                 ).colorScheme.surface.withValues(alpha: 0.8),
                 title: Image.asset(
-                  'assets/images/livo_logo_square.png',
+                  'assets/images/lvo_logo_square.png',
                   height: 38, // Slightly larger logo
                   width: 38,
                   errorBuilder: (context, error, stackTrace) {

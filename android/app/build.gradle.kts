@@ -7,22 +7,26 @@ plugins {
 }
 
 android {
-    namespace = "com.livo.app.livoapp"
+    namespace = "com.lvo.app.lvoapp"
     compileSdk = flutter.compileSdkVersion
     ndkVersion = flutter.ndkVersion
 
     compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_17
-        targetCompatibility = JavaVersion.VERSION_17
+        sourceCompatibility = JavaVersion.VERSION_1_8
+        targetCompatibility = JavaVersion.VERSION_1_8
     }
 
     kotlinOptions {
-        jvmTarget = JavaVersion.VERSION_17.toString()
+        jvmTarget = "1.8"
+    }
+
+    sourceSets {
+        getByName("main").java.srcDirs("src/main/kotlin")
     }
 
     defaultConfig {
         // TODO: Specify your own unique Application ID (https://developer.android.com/studio/build/application-id.html).
-        applicationId = "com.livo.app.livoapp"
+        applicationId = "com.lvo.app.lvoapp"
         // You can update the following values to match your application needs.
         // For more information, see: https://flutter.dev/to/review-gradle-config.
         minSdk = flutter.minSdkVersion
@@ -31,8 +35,8 @@ android {
         versionName = flutter.versionName
 
         // Add app metadata for Play Store
-        resValue("string", "app_name", "Livo")
-        resValue("string", "app_description", "Livo - Social media untuk berbagi foto dan video singkat")
+        resValue("string", "app_name", "LVO")
+        resValue("string", "app_description", "LVO - Social media untuk berbagi foto dan video singkat")
     }
 
     buildTypes {
@@ -50,7 +54,7 @@ flutter {
 
 dependencies {
     // Import the Firebase BoM
-    implementation(platform("com.google.firebase:firebase-bom:34.6.0"))
+    implementation(platform("com.google.firebase:firebase-bom:34.7.0"))
     // Add the dependencies for Firebase products you want to use
     implementation("com.google.firebase:firebase-analytics")
 }

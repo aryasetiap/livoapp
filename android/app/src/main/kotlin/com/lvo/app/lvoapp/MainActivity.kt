@@ -1,4 +1,4 @@
-package com.livo.app.livoapp
+package com.lvo.app.lvoapp
 
 import io.flutter.embedding.android.FlutterActivity
 

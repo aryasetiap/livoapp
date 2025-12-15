@@ -61,7 +61,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
                 Image.asset(
-                  'assets/images/livo_logo.png',
+                  'assets/images/lvo_logo.png',
                   height: 100,
                   width: 100,
                 ),
@@ -73,7 +73,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                 ),
                 const SizedBox(height: 8),
                 Text(
-                  'Masuk untuk melanjutkan keseruan di Livo',
+                  'Masuk untuk melanjutkan keseruan di LVO',
                   style: Theme.of(
                     context,
                   ).textTheme.bodyMedium?.copyWith(color: Colors.grey),

@@ -93,14 +93,16 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
                           shape: BoxShape.circle,
                           boxShadow: [
                             BoxShadow(
-                              color: AppTheme.primaryColor.withOpacity(0.3),
+                              color: AppTheme.primaryColor.withValues(
+                                alpha: 0.3,
+                              ),
                               blurRadius: 30,
                               spreadRadius: 10,
                             ),
                           ],
                         ),
                         child: Image.asset(
-                          'assets/images/livo_logo.png',
+                          'assets/images/lvo_logo.png',
                           width: 150, // Slightly increased size
                           height: 150,
                         ),
