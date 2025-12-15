@@ -1,5 +1,5 @@
 import 'package:json_annotation/json_annotation.dart';
-import 'package:livoapp/features/auth/domain/user_model.dart';
+import 'package:lvoapp/features/auth/domain/user_model.dart';
 
 part 'message_model.g.dart';
 

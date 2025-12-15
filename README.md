@@ -1,6 +1,6 @@
-# Livo - Social Media App
+# LVO - Social Media App
 
-**Livo** adalah aplikasi sosial media berbasis Android (Flutter) yang memungkinkan pengguna untuk berbagi konten dan terhubung dengan orang lain secara real-time.
+**LVO** adalah aplikasi sosial media berbasis Android (Flutter) yang memungkinkan pengguna untuk berbagi konten dan terhubung dengan orang lain secara real-time.
 
 ## 📱 Fitur Utama
 

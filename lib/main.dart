@@ -77,7 +77,7 @@ Future<void> main() async {
 
   timeago.setLocaleMessages('id', timeago.IdMessages());
 
-  runApp(const ProviderScope(child: LivoApp()));
+  runApp(const ProviderScope(child: LvoApp()));
 }
 
 final routerProvider = Provider<GoRouter>((ref) {
@@ -202,14 +202,14 @@ final routerProvider = Provider<GoRouter>((ref) {
   );
 });
 
-class LivoApp extends ConsumerWidget {
-  const LivoApp({super.key});
+class LvoApp extends ConsumerWidget {
+  const LvoApp({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final router = ref.watch(routerProvider);
     return MaterialApp.router(
-      title: 'Livo',
+      title: 'LVO',
       theme: AppTheme.darkTheme,
       routerConfig: router,
     );

@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:timeago/timeago.dart' as timeago;
-import 'package:livoapp/features/notifications/data/notification_repository.dart';
-import 'package:livoapp/features/notifications/domain/notification_model.dart';
+import 'package:lvoapp/features/notifications/data/notification_repository.dart';
+import 'package:lvoapp/features/notifications/domain/notification_model.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 
 final notificationsProvider = FutureProvider<List<NotificationModel>>((ref) {

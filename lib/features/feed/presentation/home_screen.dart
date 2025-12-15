@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:livoapp/features/auth/data/auth_repository.dart'; // Added import
+import 'package:lvoapp/features/auth/data/auth_repository.dart'; // Added import
 
-import 'package:livoapp/features/feed/data/post_repository.dart';
-import 'package:livoapp/features/feed/domain/post_model.dart';
-import 'package:livoapp/features/feed/presentation/widgets/post_item.dart';
+import 'package:lvoapp/features/feed/data/post_repository.dart';
+import 'package:lvoapp/features/feed/domain/post_model.dart';
+import 'package:lvoapp/features/feed/presentation/widgets/post_item.dart';
 
 enum FeedMode { global, following }
 

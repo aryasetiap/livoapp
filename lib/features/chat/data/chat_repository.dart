@@ -1,8 +1,8 @@
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:livoapp/features/chat/domain/chat_model.dart';
-import 'package:livoapp/features/chat/domain/message_model.dart';
-import 'package:livoapp/features/auth/domain/user_model.dart';
+import 'package:lvoapp/features/chat/domain/chat_model.dart';
+import 'package:lvoapp/features/chat/domain/message_model.dart';
+import 'package:lvoapp/features/auth/domain/user_model.dart';
 
 final chatRepositoryProvider = Provider<ChatRepository>((ref) {
   return ChatRepository(Supabase.instance.client);

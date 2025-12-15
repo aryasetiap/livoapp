@@ -1,5 +1,5 @@
-name: livoapp
-description: "Livo - Social media application for sharing photos and videos"
+name: lvoapp
+description: "LVO - Social media application for sharing photos and videos"
 publish_to: 'none'
 version: 1.0.0+1
 

@@ -17,7 +17,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
 
   final List<OnboardingItem> _items = [
     OnboardingItem(
-      title: 'Selamat Datang di Livo',
+      title: 'Selamat Datang di LVO',
       description:
           'Tempat seru buat nongkrong dan berbagi momen kece bareng temen-temen baru.',
       imageUrl: 'assets/images/waving_hand.png',

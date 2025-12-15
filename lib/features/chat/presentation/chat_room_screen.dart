@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:timeago/timeago.dart' as timeago;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:livoapp/features/chat/data/chat_repository.dart';
-import 'package:livoapp/features/chat/domain/message_model.dart';
-import 'package:livoapp/features/auth/domain/user_model.dart';
-import 'package:livoapp/features/auth/data/auth_repository.dart';
+import 'package:lvoapp/features/chat/data/chat_repository.dart';
+import 'package:lvoapp/features/chat/domain/message_model.dart';
+import 'package:lvoapp/features/auth/domain/user_model.dart';
+import 'package:lvoapp/features/auth/data/auth_repository.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 
 final chatMessagesProvider = StreamProvider.family<List<MessageModel>, String>((

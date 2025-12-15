@@ -1,9 +1,9 @@
 import 'package:flutter/foundation.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:livoapp/features/auth/domain/user_model.dart';
+import 'package:lvoapp/features/auth/domain/user_model.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
-import 'package:livoapp/features/notifications/data/notification_repository.dart';
+import 'package:lvoapp/features/notifications/data/notification_repository.dart';
 
 final authRepositoryProvider = Provider<AuthRepository>((ref) {
   return AuthRepository(

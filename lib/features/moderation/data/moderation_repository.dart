@@ -1,7 +1,7 @@
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:livoapp/features/moderation/domain/report_model.dart';
-import 'package:livoapp/features/feed/domain/post_model.dart';
+import 'package:lvoapp/features/moderation/domain/report_model.dart';
+import 'package:lvoapp/features/feed/domain/post_model.dart';
 
 final moderationRepositoryProvider = Provider<ModerationRepository>((ref) {
   return ModerationRepository(Supabase.instance.client);

@@ -1,8 +1,8 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:livoapp/features/feed/data/post_repository.dart';
-import 'package:livoapp/features/feed/domain/post_model.dart';
+import 'package:lvoapp/features/feed/data/post_repository.dart';
+import 'package:lvoapp/features/feed/domain/post_model.dart';
 import 'package:timeago/timeago.dart' as timeago;
 import 'package:go_router/go_router.dart';
 

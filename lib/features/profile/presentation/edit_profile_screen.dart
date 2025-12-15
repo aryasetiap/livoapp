@@ -5,9 +5,9 @@ import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-import 'package:livoapp/features/auth/domain/user_model.dart';
+import 'package:lvoapp/features/auth/domain/user_model.dart';
 import 'package:flutter_image_compress/flutter_image_compress.dart';
-import 'package:livoapp/features/profile/presentation/profile_screen.dart';
+import 'package:lvoapp/features/profile/presentation/profile_screen.dart';
 import 'package:path/path.dart' as path;
 import 'package:path_provider/path_provider.dart';
 

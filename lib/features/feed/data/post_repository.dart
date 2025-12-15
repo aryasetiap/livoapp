@@ -3,10 +3,10 @@ import 'dart:io';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:uuid/uuid.dart';
-import 'package:livoapp/features/feed/domain/post_model.dart';
-import 'package:livoapp/features/feed/domain/comment_model.dart';
-import 'package:livoapp/features/moderation/data/moderation_repository.dart';
-import 'package:livoapp/features/notifications/data/notification_repository.dart';
+import 'package:lvoapp/features/feed/domain/post_model.dart';
+import 'package:lvoapp/features/feed/domain/comment_model.dart';
+import 'package:lvoapp/features/moderation/data/moderation_repository.dart';
+import 'package:lvoapp/features/notifications/data/notification_repository.dart';
 
 import 'package:flutter_image_compress/flutter_image_compress.dart';
 

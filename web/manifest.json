@@ -1,6 +1,6 @@
 {
-    "name": "livoapp",
-    "short_name": "livoapp",
+    "name": "LVO",
+    "short_name": "LVO",
     "start_url": ".",
     "display": "standalone",
     "background_color": "#0175C2",

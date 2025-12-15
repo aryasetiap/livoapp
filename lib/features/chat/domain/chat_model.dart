@@ -1,6 +1,6 @@
 import 'package:json_annotation/json_annotation.dart';
-import 'package:livoapp/features/auth/domain/user_model.dart';
-import 'package:livoapp/features/chat/domain/message_model.dart';
+import 'package:lvoapp/features/auth/domain/user_model.dart';
+import 'package:lvoapp/features/chat/domain/message_model.dart';
 
 part 'chat_model.g.dart';
 

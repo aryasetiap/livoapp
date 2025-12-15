@@ -89,13 +89,13 @@ BEGIN
     BEGIN
         BLOCK "040904e4"
         BEGIN
-            VALUE "CompanyName", "com.livo.app" "\0"
-            VALUE "FileDescription", "livoapp" "\0"
+            VALUE "CompanyName", "com.lvo.app" "\0"
+            VALUE "FileDescription", "lvoapp" "\0"
             VALUE "FileVersion", VERSION_AS_STRING "\0"
-            VALUE "InternalName", "livoapp" "\0"
-            VALUE "LegalCopyright", "Copyright (C) 2025 com.livo.app. All rights reserved." "\0"
-            VALUE "OriginalFilename", "livoapp.exe" "\0"
-            VALUE "ProductName", "livoapp" "\0"
+            VALUE "InternalName", "lvoapp" "\0"
+            VALUE "LegalCopyright", "Copyright (C) 2025 com.lvo.app. All rights reserved." "\0"
+            VALUE "OriginalFilename", "lvoapp.exe" "\0"
+            VALUE "ProductName", "lvoapp" "\0"
             VALUE "ProductVersion", VERSION_AS_STRING "\0"
         END
     END

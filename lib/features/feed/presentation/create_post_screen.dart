@@ -5,7 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart';
 
-import 'package:livoapp/features/feed/data/post_repository.dart';
+import 'package:lvoapp/features/feed/data/post_repository.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 final createPostControllerProvider =

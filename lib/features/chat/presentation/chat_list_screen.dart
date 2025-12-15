@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:livoapp/features/chat/data/chat_repository.dart';
-import 'package:livoapp/features/chat/domain/chat_model.dart';
-import 'package:livoapp/features/auth/data/auth_repository.dart';
+import 'package:lvoapp/features/chat/data/chat_repository.dart';
+import 'package:lvoapp/features/chat/domain/chat_model.dart';
+import 'package:lvoapp/features/auth/data/auth_repository.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:timeago/timeago.dart' as timeago;
 
