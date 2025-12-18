@@ -9,6 +9,7 @@ import 'package:flutter_animate/flutter_animate.dart';
 import 'package:lvoapp/features/feed/data/post_repository.dart';
 import 'package:lvoapp/features/feed/domain/post_model.dart';
 import 'package:lvoapp/features/feed/presentation/widgets/post_item.dart';
+import 'package:lvoapp/features/notifications/data/notification_repository.dart';
 import '../../../../core/config/theme.dart';
 
 enum FeedMode { global, following }
@@ -24,6 +25,12 @@ final feedControllerProvider =
         mode,
       );
     });
+
+final unreadNotificationCountProvider = FutureProvider<int>((ref) {
+  return ref
+      .watch(notificationRepositoryProvider)
+      .getUnreadNotificationsCount();
+});
 
 class FeedController extends StateNotifier<AsyncValue<List<PostModel>>> {
   final PostRepository _postRepository;
@@ -256,11 +263,46 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                     ],
                   ),
                   actions: [
-                    IconButton(
-                      onPressed: () {
-                        context.push('/notifications');
-                      },
-                      icon: const Icon(Icons.notifications_outlined, size: 28),
+                    Stack(
+                      children: [
+                        IconButton(
+                          onPressed: () {
+                            context.push('/notifications');
+                          },
+                          icon: const Icon(
+                            Icons.notifications_outlined,
+                            size: 28,
+                          ),
+                        ),
+                        Consumer(
+                          builder: (context, ref, child) {
+                            final countAsync = ref.watch(
+                              unreadNotificationCountProvider,
+                            );
+                            return countAsync.maybeWhen(
+                              data: (count) {
+                                if (count == 0) return const SizedBox.shrink();
+                                return Positioned(
+                                  top: 12,
+                                  right: 12,
+                                  child: Container(
+                                    padding: const EdgeInsets.all(4),
+                                    decoration: const BoxDecoration(
+                                      color: Colors.red,
+                                      shape: BoxShape.circle,
+                                    ),
+                                    constraints: const BoxConstraints(
+                                      minWidth: 8,
+                                      minHeight: 8,
+                                    ),
+                                  ),
+                                );
+                              },
+                              orElse: () => const SizedBox.shrink(),
+                            );
+                          },
+                        ),
+                      ],
                     ),
                     const SizedBox(width: 8), // Add some spacing at the end
                   ],

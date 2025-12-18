@@ -222,6 +222,23 @@ class ChatRepository {
     }
   }
 
+  Future<int> getTotalUnreadCount() async {
+    final userId = _supabase.auth.currentUser?.id;
+    if (userId == null) return 0;
+
+    try {
+      final response = await _supabase
+          .from('messages')
+          .count()
+          .eq('is_read', false)
+          .neq('sender_id', userId);
+
+      return response;
+    } catch (e) {
+      return 0;
+    }
+  }
+
   Stream<List<MessageModel>> subscribeToMessages(String chatId) {
     return _supabase
         .from('messages')
