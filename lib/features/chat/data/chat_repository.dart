@@ -89,11 +89,20 @@ class ChatRepository {
             }
           }
 
+          // 4. Get unread count
+          final unreadCount = await _supabase
+              .from('messages')
+              .count()
+              .eq('chat_id', chatId)
+              .eq('is_read', false)
+              .neq('sender_id', userId);
+
           chats.add(
             ChatModel.fromJson({
               ...chat,
               'participants': participants.map((p) => p.toJson()).toList(),
               'last_message': lastMessage?.toJson(),
+              'unread_count': unreadCount,
             }),
           );
         } catch (e) {

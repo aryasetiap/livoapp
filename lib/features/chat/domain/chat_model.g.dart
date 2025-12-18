@@ -16,6 +16,7 @@ ChatModel _$ChatModelFromJson(Map<String, dynamic> json) => ChatModel(
   lastMessage: json['last_message'] == null
       ? null
       : MessageModel.fromJson(json['last_message'] as Map<String, dynamic>),
+  unreadCount: json['unread_count'] as int? ?? 0,
 );
 
 Map<String, dynamic> _$ChatModelToJson(ChatModel instance) => <String, dynamic>{
@@ -24,4 +25,5 @@ Map<String, dynamic> _$ChatModelToJson(ChatModel instance) => <String, dynamic>{
   'updated_at': instance.updatedAt.toIso8601String(),
   'participants': instance.participants,
   'last_message': instance.lastMessage,
+  'unread_count': instance.unreadCount,
 };

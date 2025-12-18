@@ -44,8 +44,25 @@ class ChatListScreen extends ConsumerWidget {
         ),
         centerTitle: true,
       ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () {
+          // For now, show a snackbar or simple dialog since we don't have a specific "Select User" screen ready in the context provided.
+          // Ideally: context.push('/new-chat');
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Fitur "Chat Baru" akan segera hadir!'),
+            ),
+          );
+        },
+        backgroundColor: Theme.of(context).colorScheme.primary,
+        child: const Icon(
+          CupertinoIcons.chat_bubble_text_fill,
+          color: Colors.white,
+        ),
+      ),
       body: Stack(
         children: [
+          // ... (backgrounds)
           // 1. Background Gradient
           Positioned.fill(
             child: Container(
@@ -160,35 +177,56 @@ class ChatListScreen extends ConsumerWidget {
                               padding: const EdgeInsets.all(12),
                               child: Row(
                                 children: [
-                                  Container(
-                                    decoration: BoxDecoration(
-                                      shape: BoxShape.circle,
-                                      border: Border.all(
-                                        color: Theme.of(context)
-                                            .colorScheme
-                                            .primary
-                                            .withValues(alpha: 0.5),
-                                        width: 1.5,
+                                  Stack(
+                                    children: [
+                                      Container(
+                                        decoration: BoxDecoration(
+                                          shape: BoxShape.circle,
+                                          border: Border.all(
+                                            color: Theme.of(context)
+                                                .colorScheme
+                                                .primary
+                                                .withValues(alpha: 0.5),
+                                            width: 1.5,
+                                          ),
+                                        ),
+                                        padding: const EdgeInsets.all(2),
+                                        child: CircleAvatar(
+                                          radius: 26,
+                                          backgroundColor: Colors.grey.shade900,
+                                          backgroundImage:
+                                              otherUser.avatarUrl != null
+                                              ? CachedNetworkImageProvider(
+                                                  otherUser.avatarUrl!,
+                                                )
+                                              : null,
+                                          child: otherUser.avatarUrl == null
+                                              ? const Icon(
+                                                  CupertinoIcons.person_fill,
+                                                  size: 24,
+                                                  color: Colors.white54,
+                                                )
+                                              : null,
+                                        ),
                                       ),
-                                    ),
-                                    padding: const EdgeInsets.all(2),
-                                    child: CircleAvatar(
-                                      radius: 26,
-                                      backgroundColor: Colors.grey.shade900,
-                                      backgroundImage:
-                                          otherUser.avatarUrl != null
-                                          ? CachedNetworkImageProvider(
-                                              otherUser.avatarUrl!,
-                                            )
-                                          : null,
-                                      child: otherUser.avatarUrl == null
-                                          ? const Icon(
-                                              CupertinoIcons.person_fill,
-                                              size: 24,
-                                              color: Colors.white54,
-                                            )
-                                          : null,
-                                    ),
+                                      // Online Status Indicator (Mocked for now)
+                                      Positioned(
+                                        bottom: 2,
+                                        right: 2,
+                                        child: Container(
+                                          width: 12,
+                                          height: 12,
+                                          decoration: BoxDecoration(
+                                            color: Colors.greenAccent,
+                                            shape: BoxShape.circle,
+                                            border: Border.all(
+                                              color: Colors.black,
+                                              width: 2,
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                    ],
                                   ),
                                   const SizedBox(width: 16),
                                   Expanded(
@@ -233,22 +271,12 @@ class ChatListScreen extends ConsumerWidget {
                                             maxLines: 1,
                                             overflow: TextOverflow.ellipsis,
                                             style: GoogleFonts.inter(
-                                              color:
-                                                  chat.lastMessage!.isRead ||
-                                                      chat
-                                                              .lastMessage!
-                                                              .senderId ==
-                                                          currentUserId
-                                                  ? Colors.white54
-                                                  : Colors.white,
-                                              fontWeight:
-                                                  chat.lastMessage!.isRead ||
-                                                      chat
-                                                              .lastMessage!
-                                                              .senderId ==
-                                                          currentUserId
-                                                  ? FontWeight.normal
-                                                  : FontWeight.bold,
+                                              color: chat.unreadCount > 0
+                                                  ? Colors.white
+                                                  : Colors.white54,
+                                              fontWeight: chat.unreadCount > 0
+                                                  ? FontWeight.bold
+                                                  : FontWeight.normal,
                                             ),
                                           )
                                         else
@@ -265,19 +293,29 @@ class ChatListScreen extends ConsumerWidget {
                                       ],
                                     ),
                                   ),
-                                  if (chat.lastMessage != null &&
-                                      !chat.lastMessage!.isRead &&
-                                      chat.lastMessage!.senderId !=
-                                          currentUserId)
+                                  if (chat.unreadCount > 0)
                                     Container(
                                       margin: const EdgeInsets.only(left: 8),
-                                      width: 10,
-                                      height: 10,
+                                      padding: const EdgeInsets.all(6),
                                       decoration: BoxDecoration(
                                         color: Theme.of(
                                           context,
                                         ).colorScheme.primary,
                                         shape: BoxShape.circle,
+                                      ),
+                                      constraints: const BoxConstraints(
+                                        minWidth: 20,
+                                        minHeight: 20,
+                                      ),
+                                      child: Center(
+                                        child: Text(
+                                          '${chat.unreadCount}',
+                                          style: GoogleFonts.outfit(
+                                            color: Colors.white,
+                                            fontSize: 10,
+                                            fontWeight: FontWeight.bold,
+                                          ),
+                                        ),
                                       ),
                                     ),
                                 ],

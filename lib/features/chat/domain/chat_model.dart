@@ -22,12 +22,16 @@ class ChatModel {
   @JsonKey(name: 'last_message')
   final MessageModel? lastMessage;
 
+  @JsonKey(name: 'unread_count')
+  final int unreadCount;
+
   ChatModel({
     required this.id,
     required this.createdAt,
     required this.updatedAt,
     this.participants,
     this.lastMessage,
+    this.unreadCount = 0,
   });
 
   factory ChatModel.fromJson(Map<String, dynamic> json) =>

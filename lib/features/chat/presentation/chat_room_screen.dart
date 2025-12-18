@@ -11,7 +11,6 @@ import 'package:lvoapp/features/chat/domain/message_model.dart';
 import 'package:lvoapp/features/auth/domain/user_model.dart';
 import 'package:lvoapp/features/auth/data/auth_repository.dart';
 import 'package:cached_network_image/cached_network_image.dart';
-import 'package:timeago/timeago.dart' as timeago;
 
 final chatMessagesProvider = StreamProvider.family<List<MessageModel>, String>((
   ref,
@@ -69,6 +68,31 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
         curve: Curves.easeOut,
       );
     }
+  }
+
+  bool _isSameDay(DateTime date1, DateTime date2) {
+    return date1.year == date2.year &&
+        date1.month == date2.month &&
+        date1.day == date2.day;
+  }
+
+  String _formatDateHeader(DateTime date) {
+    final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
+    final yesterday = today.subtract(const Duration(days: 1));
+    final dateToCheck = DateTime(date.year, date.month, date.day);
+
+    if (dateToCheck == today) {
+      return 'Hari Ini';
+    } else if (dateToCheck == yesterday) {
+      return 'Kemarin';
+    } else {
+      return '${date.day}/${date.month}/${date.year}';
+    }
+  }
+
+  String _formatTime(DateTime date) {
+    return '${date.hour.toString().padLeft(2, '0')}:${date.minute.toString().padLeft(2, '0')}';
   }
 
   @override
@@ -154,6 +178,21 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
                         ).animate().fadeIn();
                       }
 
+                      // Process messages to inject date headers
+                      final combinedList = <dynamic>[];
+                      for (int i = 0; i < messages.length; i++) {
+                        combinedList.add(messages[i]);
+                        final currentMsgDate = messages[i].createdAt;
+                        final nextMsgDate = (i + 1 < messages.length)
+                            ? messages[i + 1].createdAt
+                            : null;
+
+                        if (nextMsgDate == null ||
+                            !_isSameDay(currentMsgDate, nextMsgDate)) {
+                          combinedList.add(_formatDateHeader(currentMsgDate));
+                        }
+                      }
+
                       return ListView.builder(
                         reverse: true,
                         controller: _scrollController,
@@ -161,9 +200,38 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
                           horizontal: 16,
                           vertical: 20,
                         ),
-                        itemCount: messages.length,
+                        itemCount: combinedList.length,
                         itemBuilder: (context, index) {
-                          final message = messages[index];
+                          final item = combinedList[index];
+
+                          if (item is String) {
+                            // Date Header
+                            return Center(
+                              child: Container(
+                                margin: const EdgeInsets.symmetric(
+                                  vertical: 16,
+                                ),
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 12,
+                                  vertical: 4,
+                                ),
+                                decoration: BoxDecoration(
+                                  color: Colors.white.withValues(alpha: 0.1),
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                                child: Text(
+                                  item,
+                                  style: GoogleFonts.inter(
+                                    fontSize: 12,
+                                    color: Colors.white70,
+                                    fontWeight: FontWeight.w500,
+                                  ),
+                                ),
+                              ),
+                            );
+                          }
+
+                          final message = item as MessageModel;
                           final isMe = message.senderId == currentUserId;
 
                           return Align(
@@ -216,6 +284,7 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
                                       child: Column(
                                         crossAxisAlignment:
                                             CrossAxisAlignment.end,
+                                        mainAxisSize: MainAxisSize.min,
                                         children: [
                                           Text(
                                             message.content,
@@ -225,17 +294,30 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
                                             ),
                                           ),
                                           const SizedBox(height: 4),
-                                          Text(
-                                            timeago.format(
-                                              message.createdAt,
-                                              locale: 'id',
-                                            ),
-                                            style: GoogleFonts.inter(
-                                              fontSize: 10,
-                                              color: Colors.white.withValues(
-                                                alpha: 0.7,
+                                          Row(
+                                            mainAxisSize: MainAxisSize.min,
+                                            children: [
+                                              Text(
+                                                _formatTime(message.createdAt),
+                                                style: GoogleFonts.inter(
+                                                  fontSize: 10,
+                                                  color: Colors.white
+                                                      .withValues(alpha: 0.7),
+                                                ),
                                               ),
-                                            ),
+                                              if (isMe) ...[
+                                                const SizedBox(width: 4),
+                                                Icon(
+                                                  message.isRead
+                                                      ? Icons.done_all
+                                                      : Icons.check,
+                                                  size: 14,
+                                                  color: message.isRead
+                                                      ? Colors.lightBlueAccent
+                                                      : Colors.white70,
+                                                ),
+                                              ],
+                                            ],
                                           ),
                                         ],
                                       ),
