@@ -1,5 +1,10 @@
+import 'dart:ui' as ui;
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:google_fonts/google_fonts.dart';
+import 'package:lvoapp/core/config/theme.dart';
 import 'package:lvoapp/features/feed/data/post_repository.dart';
 import 'package:lvoapp/features/feed/domain/comment_model.dart';
 import 'package:lvoapp/features/feed/domain/post_model.dart';
@@ -76,13 +81,16 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
       builder: (context) => StatefulBuilder(
         builder: (context, setState) {
           return AlertDialog(
-            title: const Text('Laporkan Postingan'),
+            title: Text(
+              'Laporkan Postingan',
+              style: GoogleFonts.outfit(fontWeight: FontWeight.bold),
+            ),
             content: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                const Text(
+                Text(
                   'Mengapa Anda ingin melaporkan postingan ini?',
-                  style: TextStyle(fontSize: 16),
+                  style: GoogleFonts.inter(fontSize: 16),
                 ),
                 const SizedBox(height: 16),
                 InputDecorator(
@@ -101,7 +109,7 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
                       items: reasons.map((reason) {
                         return DropdownMenuItem(
                           value: reason,
-                          child: Text(reason),
+                          child: Text(reason, style: GoogleFonts.inter()),
                         );
                       }).toList(),
                       onChanged: (value) {
@@ -197,139 +205,290 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
     final commentsState = ref.watch(commentsProvider(widget.post.id));
 
     return Scaffold(
+      extendBodyBehindAppBar: true,
       appBar: AppBar(
-        title: const Text('Postingan'),
+        title: Text(
+          'Postingan',
+          style: GoogleFonts.outfit(fontWeight: FontWeight.bold),
+        ),
+        backgroundColor: Colors.transparent,
+        flexibleSpace: ClipRRect(
+          child: BackdropFilter(
+            filter: ui.ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+            child: Container(
+              color: Theme.of(
+                context,
+              ).colorScheme.surface.withValues(alpha: 0.5),
+            ),
+          ),
+        ),
+        leading: IconButton(
+          icon: const Icon(CupertinoIcons.back),
+          onPressed: () => Navigator.of(context).pop(),
+        ),
         actions: [
           IconButton(
             onPressed: _showReportDialog,
-            icon: const Icon(Icons.flag_outlined),
+            icon: const Icon(CupertinoIcons.flag),
             tooltip: 'Laporkan postingan',
           ),
         ],
       ),
-      body: Column(
+      body: Stack(
         children: [
-          Expanded(
-            child: CustomScrollView(
-              slivers: [
-                SliverToBoxAdapter(
-                  child: PostItem(post: widget.post, isDetail: true),
+          // 1. Background Gradient
+          Positioned.fill(
+            child: Container(
+              decoration: const BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                  colors: [
+                    AppTheme.backgroundColor,
+                    Color(0xFF1A1A2E), // Deep Dark Blue
+                    Color(0xFF2D1B4E), // Deep Purple
+                    Colors.black,
+                  ],
+                  stops: [0.0, 0.4, 0.7, 1.0],
                 ),
-                SliverToBoxAdapter(
-                  child: Padding(
-                    padding: const EdgeInsets.all(16.0),
-                    child: Text(
-                      'Komentar',
-                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                        fontWeight: FontWeight.bold,
+              ),
+            ),
+          ),
+
+          // 2. Ambient Orbs (Animated)
+          Positioned(
+            top: 100,
+            right: -100,
+            child:
+                ImageFiltered(
+                      imageFilter: ui.ImageFilter.blur(sigmaX: 80, sigmaY: 80),
+                      child: Container(
+                        width: 300,
+                        height: 300,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          color: Theme.of(
+                            context,
+                          ).colorScheme.primary.withValues(alpha: 0.2),
+                        ),
                       ),
+                    )
+                    .animate(
+                      onPlay: (controller) => controller.repeat(reverse: true),
+                    )
+                    .scale(
+                      begin: const Offset(1, 1),
+                      end: const Offset(1.2, 1.2),
+                      duration: 6.seconds,
                     ),
-                  ),
-                ),
-                commentsState.when(
-                  data: (comments) {
-                    if (comments.isEmpty) {
-                      return const SliverToBoxAdapter(
+          ),
+
+          // 3. Content
+          SafeArea(
+            child: Column(
+              children: [
+                Expanded(
+                  child: CustomScrollView(
+                    slivers: [
+                      SliverToBoxAdapter(
+                        child: PostItem(post: widget.post, isDetail: true),
+                      ),
+                      SliverToBoxAdapter(
                         child: Padding(
-                          padding: EdgeInsets.all(32.0),
-                          child: Center(
-                            child: Text(
-                              'Belum ada komentar.\nJadilah yang pertama berkomentar!',
-                              textAlign: TextAlign.center,
-                              style: TextStyle(color: Colors.grey),
+                          padding: const EdgeInsets.fromLTRB(20, 24, 20, 12),
+                          child: Text(
+                            'Komentar',
+                            style: GoogleFonts.outfit(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 18,
+                              color: Colors.white,
                             ),
                           ),
                         ),
-                      );
-                    }
-                    return SliverList(
-                      delegate: SliverChildBuilderDelegate((context, index) {
-                        final comment = comments[index];
-                        return ListTile(
-                          leading: CircleAvatar(
-                            backgroundImage: comment.avatarUrl != null
-                                ? CachedNetworkImageProvider(comment.avatarUrl!)
-                                : null,
-                            child: comment.avatarUrl == null
-                                ? const Icon(Icons.person)
-                                : null,
-                          ),
-                          title: Text(
-                            comment.username ?? 'User',
-                            style: const TextStyle(fontWeight: FontWeight.bold),
-                          ),
-                          subtitle: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(comment.content),
-                              const SizedBox(height: 4),
-                              Text(
-                                timeago.format(comment.createdAt, locale: 'id'),
-                                style: TextStyle(
-                                  color: Colors.grey.shade500,
-                                  fontSize: 12,
+                      ),
+                      commentsState.when(
+                        data: (comments) {
+                          if (comments.isEmpty) {
+                            return SliverToBoxAdapter(
+                              child: Padding(
+                                padding: const EdgeInsets.all(32.0),
+                                child: Center(
+                                  child: Text(
+                                    'Belum ada komentar.\nJadilah yang pertama berkomentar!',
+                                    textAlign: TextAlign.center,
+                                    style: GoogleFonts.inter(
+                                      color: Colors.grey,
+                                    ),
+                                  ),
                                 ),
                               ),
-                            ],
+                            );
+                          }
+                          return SliverList(
+                            delegate: SliverChildBuilderDelegate((
+                              context,
+                              index,
+                            ) {
+                              final comment = comments[index];
+                              return Container(
+                                margin: const EdgeInsets.symmetric(
+                                  horizontal: 16,
+                                  vertical: 4,
+                                ),
+                                decoration: BoxDecoration(
+                                  color: Colors.white.withValues(alpha: 0.03),
+                                  borderRadius: BorderRadius.circular(16),
+                                  border: Border.all(
+                                    color: Colors.white.withValues(alpha: 0.05),
+                                  ),
+                                ),
+                                child: ListTile(
+                                  contentPadding: const EdgeInsets.symmetric(
+                                    horizontal: 16,
+                                    vertical: 8,
+                                  ),
+                                  leading: CircleAvatar(
+                                    radius: 20,
+                                    backgroundColor: Colors.grey.shade900,
+                                    backgroundImage: comment.avatarUrl != null
+                                        ? CachedNetworkImageProvider(
+                                            comment.avatarUrl!,
+                                          )
+                                        : null,
+                                    child: comment.avatarUrl == null
+                                        ? const Icon(
+                                            CupertinoIcons.person_fill,
+                                            size: 20,
+                                            color: Colors.white54,
+                                          )
+                                        : null,
+                                  ),
+                                  title: Text(
+                                    comment.username ?? 'User',
+                                    style: GoogleFonts.outfit(
+                                      fontWeight: FontWeight.bold,
+                                      color: Colors.white,
+                                    ),
+                                  ),
+                                  subtitle: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      const SizedBox(height: 4),
+                                      Text(
+                                        comment.content,
+                                        style: GoogleFonts.inter(
+                                          color: Colors.white.withValues(
+                                            alpha: 0.9,
+                                          ),
+                                        ),
+                                      ),
+                                      const SizedBox(height: 6),
+                                      Text(
+                                        timeago.format(
+                                          comment.createdAt,
+                                          locale: 'id',
+                                        ),
+                                        style: GoogleFonts.inter(
+                                          color: Colors.grey.shade500,
+                                          fontSize: 12,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              );
+                            }, childCount: comments.length),
+                          );
+                        },
+                        loading: () => const SliverToBoxAdapter(
+                          child: Center(child: CircularProgressIndicator()),
+                        ),
+                        error: (error, stack) => SliverToBoxAdapter(
+                          child: Center(
+                            child: Text(
+                              'Error: $error',
+                              style: const TextStyle(color: Colors.red),
+                            ),
                           ),
-                        );
-                      }, childCount: comments.length),
-                    );
-                  },
-                  loading: () => const SliverToBoxAdapter(
-                    child: Center(child: CircularProgressIndicator()),
-                  ),
-                  error: (error, stack) => SliverToBoxAdapter(
-                    child: Center(child: Text('Error: $error')),
+                        ),
+                      ),
+                      const SliverPadding(
+                        padding: EdgeInsets.only(bottom: 100),
+                      ),
+                    ],
                   ),
                 ),
-                const SliverPadding(padding: EdgeInsets.only(bottom: 100)),
-              ],
-            ),
-          ),
-          Container(
-            padding: const EdgeInsets.all(8.0),
-            decoration: BoxDecoration(
-              color: Theme.of(context).colorScheme.surface,
-              border: Border(top: BorderSide(color: Colors.grey.shade800)),
-            ),
-            child: SafeArea(
-              child: Row(
-                children: [
-                  Expanded(
-                    child: TextField(
-                      controller: _commentController,
-                      decoration: InputDecoration(
-                        hintText: 'Tulis komentar...',
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(24),
-                          borderSide: BorderSide.none,
+                ClipRRect(
+                  borderRadius: const BorderRadius.vertical(
+                    top: Radius.circular(24),
+                  ),
+                  child: BackdropFilter(
+                    filter: ui.ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+                    child: Container(
+                      padding: const EdgeInsets.all(12.0),
+                      decoration: BoxDecoration(
+                        color: Colors.black.withValues(alpha: 0.6),
+                        border: Border(
+                          top: BorderSide(
+                            color: Colors.white.withValues(alpha: 0.1),
+                          ),
                         ),
-                        filled: true,
-                        fillColor: Colors.grey.shade900,
-                        contentPadding: const EdgeInsets.symmetric(
-                          horizontal: 16,
-                          vertical: 8,
+                      ),
+                      child: SafeArea(
+                        top: false,
+                        child: Row(
+                          children: [
+                            Expanded(
+                              child: TextField(
+                                controller: _commentController,
+                                style: GoogleFonts.inter(color: Colors.white),
+                                decoration: InputDecoration(
+                                  hintText: 'Tulis komentar...',
+                                  hintStyle: GoogleFonts.inter(
+                                    color: Colors.grey,
+                                  ),
+                                  border: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(24),
+                                    borderSide: BorderSide.none,
+                                  ),
+                                  filled: true,
+                                  fillColor: Colors.white.withValues(
+                                    alpha: 0.1,
+                                  ),
+                                  contentPadding: const EdgeInsets.symmetric(
+                                    horizontal: 16,
+                                    vertical: 8,
+                                  ),
+                                ),
+                              ),
+                            ),
+                            const SizedBox(width: 12),
+                            IconButton(
+                              onPressed: _isSubmitting ? null : _submitComment,
+                              icon: _isSubmitting
+                                  ? const SizedBox(
+                                      width: 24,
+                                      height: 24,
+                                      child: CircularProgressIndicator(
+                                        strokeWidth: 2,
+                                      ),
+                                    )
+                                  : Icon(
+                                      CupertinoIcons.paperplane_fill,
+                                      color: Theme.of(
+                                        context,
+                                      ).colorScheme.primary,
+                                      size: 28,
+                                    ),
+                            ),
+                          ],
                         ),
                       ),
                     ),
                   ),
-                  const SizedBox(width: 8),
-                  IconButton(
-                    onPressed: _isSubmitting ? null : _submitComment,
-                    icon: _isSubmitting
-                        ? const SizedBox(
-                            width: 24,
-                            height: 24,
-                            child: CircularProgressIndicator(strokeWidth: 2),
-                          )
-                        : Icon(
-                            Icons.send_rounded,
-                            color: Theme.of(context).colorScheme.primary,
-                          ),
-                  ),
-                ],
-              ),
+                ),
+              ],
             ),
           ),
         ],
