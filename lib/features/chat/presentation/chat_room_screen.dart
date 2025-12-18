@@ -1,11 +1,17 @@
+import 'dart:ui' as ui;
+
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:timeago/timeago.dart' as timeago;
+import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:google_fonts/google_fonts.dart';
+
 import 'package:lvoapp/features/chat/data/chat_repository.dart';
 import 'package:lvoapp/features/chat/domain/message_model.dart';
 import 'package:lvoapp/features/auth/domain/user_model.dart';
 import 'package:lvoapp/features/auth/data/auth_repository.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:timeago/timeago.dart' as timeago;
 
 final chatMessagesProvider = StreamProvider.family<List<MessageModel>, String>((
   ref,
@@ -71,129 +77,260 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
     final currentUserId = ref.watch(authRepositoryProvider).currentUser?.id;
 
     return Scaffold(
+      extendBodyBehindAppBar: true,
       appBar: AppBar(
+        backgroundColor: Colors.transparent,
+        flexibleSpace: ClipRRect(
+          child: BackdropFilter(
+            filter: ui.ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+            child: Container(
+              color: Theme.of(
+                context,
+              ).colorScheme.surface.withValues(alpha: 0.5),
+            ),
+          ),
+        ),
+        leading: const BackButton(color: Colors.white),
         title: Row(
           children: [
             CircleAvatar(
-              radius: 16,
+              radius: 18,
+              backgroundColor: Colors.grey.shade900,
               backgroundImage: widget.otherUser.avatarUrl != null
                   ? CachedNetworkImageProvider(widget.otherUser.avatarUrl!)
                   : null,
               child: widget.otherUser.avatarUrl == null
-                  ? const Icon(Icons.person, size: 16)
+                  ? const Icon(
+                      CupertinoIcons.person_fill,
+                      size: 18,
+                      color: Colors.white54,
+                    )
                   : null,
             ),
-            const SizedBox(width: 8),
+            const SizedBox(width: 12),
             Text(
               widget.otherUser.username,
-              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+              style: GoogleFonts.outfit(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+                color: Colors.white,
+              ),
             ),
           ],
         ),
       ),
-      body: Column(
+      body: Stack(
         children: [
-          Expanded(
-            child: messagesState.when(
-              data: (messages) {
-                if (messages.isEmpty) {
-                  return const Center(
-                    child: Text(
-                      'Belum ada pesan',
-                      style: TextStyle(color: Colors.grey),
-                    ),
-                  );
-                }
+          // 1. Background Gradient
+          Positioned.fill(
+            child: Container(
+              decoration: const BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                  colors: [
+                    Color(0xFF0F0F1A), // Very dark blue/black
+                    Color(0xFF1A1A2E),
+                    Color(0xFF201A30),
+                  ],
+                ),
+              ),
+            ),
+          ),
 
-                // Group messages or just show list
-                return ListView.builder(
-                  reverse: true,
-                  controller: _scrollController,
-                  padding: const EdgeInsets.all(16),
-                  itemCount: messages.length,
-                  itemBuilder: (context, index) {
-                    final message = messages[index];
-                    final isMe = message.senderId == currentUserId;
+          // 2. Content
+          SafeArea(
+            child: Column(
+              children: [
+                Expanded(
+                  child: messagesState.when(
+                    data: (messages) {
+                      if (messages.isEmpty) {
+                        return Center(
+                          child: Text(
+                            'Mulai percakapan dengan ${widget.otherUser.username}',
+                            style: GoogleFonts.inter(color: Colors.white30),
+                          ),
+                        ).animate().fadeIn();
+                      }
 
-                    return Align(
-                      alignment: isMe
-                          ? Alignment.centerRight
-                          : Alignment.centerLeft,
-                      child: Container(
-                        margin: const EdgeInsets.only(bottom: 8),
-                        constraints: BoxConstraints(
-                          maxWidth: MediaQuery.of(context).size.width * 0.75,
-                        ),
+                      return ListView.builder(
+                        reverse: true,
+                        controller: _scrollController,
                         padding: const EdgeInsets.symmetric(
                           horizontal: 16,
-                          vertical: 10,
+                          vertical: 20,
+                        ),
+                        itemCount: messages.length,
+                        itemBuilder: (context, index) {
+                          final message = messages[index];
+                          final isMe = message.senderId == currentUserId;
+
+                          return Align(
+                            alignment: isMe
+                                ? Alignment.centerRight
+                                : Alignment.centerLeft,
+                            child:
+                                Container(
+                                      margin: const EdgeInsets.only(bottom: 8),
+                                      constraints: BoxConstraints(
+                                        maxWidth:
+                                            MediaQuery.of(context).size.width *
+                                            0.75,
+                                      ),
+                                      padding: const EdgeInsets.symmetric(
+                                        horizontal: 16,
+                                        vertical: 12,
+                                      ),
+                                      decoration: BoxDecoration(
+                                        gradient: isMe
+                                            ? LinearGradient(
+                                                colors: [
+                                                  Theme.of(
+                                                    context,
+                                                  ).colorScheme.primary,
+                                                  Theme.of(
+                                                    context,
+                                                  ).colorScheme.secondary,
+                                                ],
+                                                begin: Alignment.topLeft,
+                                                end: Alignment.bottomRight,
+                                              )
+                                            : null,
+                                        color: isMe
+                                            ? null
+                                            : Colors.white.withValues(
+                                                alpha: 0.1,
+                                              ),
+                                        borderRadius: BorderRadius.only(
+                                          topLeft: const Radius.circular(20),
+                                          topRight: const Radius.circular(20),
+                                          bottomLeft: isMe
+                                              ? const Radius.circular(20)
+                                              : const Radius.circular(4),
+                                          bottomRight: isMe
+                                              ? const Radius.circular(4)
+                                              : const Radius.circular(20),
+                                        ),
+                                      ),
+                                      child: Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.end,
+                                        children: [
+                                          Text(
+                                            message.content,
+                                            style: GoogleFonts.inter(
+                                              color: Colors.white,
+                                              fontSize: 15,
+                                            ),
+                                          ),
+                                          const SizedBox(height: 4),
+                                          Text(
+                                            timeago.format(
+                                              message.createdAt,
+                                              locale: 'id',
+                                            ),
+                                            style: GoogleFonts.inter(
+                                              fontSize: 10,
+                                              color: Colors.white.withValues(
+                                                alpha: 0.7,
+                                              ),
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    )
+                                    .animate()
+                                    .slideY(
+                                      begin: 0.2,
+                                      end: 0,
+                                      curve: Curves.easeOut,
+                                    )
+                                    .fadeIn(),
+                          );
+                        },
+                      );
+                    },
+                    loading: () =>
+                        const Center(child: CircularProgressIndicator()),
+                    error: (error, stack) => Center(
+                      child: Text(
+                        'Error: $error',
+                        style: const TextStyle(color: Colors.red),
+                      ),
+                    ),
+                  ),
+                ),
+
+                // Input Area
+                Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(30),
+                    child: BackdropFilter(
+                      filter: ui.ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 8,
+                          vertical: 8,
                         ),
                         decoration: BoxDecoration(
-                          color: isMe
-                              ? Theme.of(context).colorScheme.primary
-                              : Colors.grey.shade800,
-                          borderRadius: BorderRadius.only(
-                            topLeft: const Radius.circular(20),
-                            topRight: const Radius.circular(20),
-                            bottomRight: isMe
-                                ? const Radius.circular(0)
-                                : const Radius.circular(20),
+                          color: Colors.white.withValues(alpha: 0.1),
+                          borderRadius: BorderRadius.circular(30),
+                          border: Border.all(
+                            color: Colors.white.withValues(alpha: 0.1),
                           ),
                         ),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.end,
+                        child: Row(
                           children: [
-                            Text(
-                              message.content,
-                              style: const TextStyle(color: Colors.white),
+                            const SizedBox(width: 12),
+                            Expanded(
+                              child: TextField(
+                                controller: _messageController,
+                                style: GoogleFonts.inter(color: Colors.white),
+                                decoration: InputDecoration(
+                                  hintText: 'Tulis pesan...',
+                                  hintStyle: GoogleFonts.inter(
+                                    color: Colors.white30,
+                                  ),
+                                  border: InputBorder.none,
+                                  isDense: true,
+                                  contentPadding: const EdgeInsets.symmetric(
+                                    vertical: 10,
+                                  ),
+                                ),
+                                textCapitalization:
+                                    TextCapitalization.sentences,
+                                minLines: 1,
+                                maxLines: 5,
+                              ),
                             ),
-                            const SizedBox(height: 4),
-                            Text(
-                              timeago.format(message.createdAt, locale: 'id'),
-                              style: TextStyle(
-                                fontSize: 10,
-                                color: Colors.white.withValues(alpha: 0.7),
+                            const SizedBox(width: 8),
+                            Container(
+                              decoration: BoxDecoration(
+                                shape: BoxShape.circle,
+                                color: Theme.of(context).colorScheme.primary,
+                                gradient: LinearGradient(
+                                  colors: [
+                                    Theme.of(context).colorScheme.primary,
+                                    Theme.of(context).colorScheme.secondary,
+                                  ],
+                                ),
+                              ),
+                              child: IconButton(
+                                onPressed: _sendMessage,
+                                icon: const Icon(
+                                  CupertinoIcons.arrow_up,
+                                  color: Colors.white,
+                                ),
+                                tooltip: 'Kirim',
                               ),
                             ),
                           ],
                         ),
                       ),
-                    );
-                  },
-                );
-              },
-              loading: () => const Center(child: CircularProgressIndicator()),
-              error: (error, stack) => Center(child: Text('Error: $error')),
-            ),
-          ),
-          Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: Row(
-              children: [
-                Expanded(
-                  child: TextField(
-                    controller: _messageController,
-                    decoration: InputDecoration(
-                      hintText: 'Tulis pesan...',
-                      filled: true,
-                      fillColor: Colors.grey.shade900,
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(24),
-                        borderSide: BorderSide.none,
-                      ),
-                      contentPadding: const EdgeInsets.symmetric(
-                        horizontal: 20,
-                        vertical: 10,
-                      ),
                     ),
-                    textCapitalization: TextCapitalization.sentences,
                   ),
-                ),
-                const SizedBox(width: 8),
-                IconButton(
-                  onPressed: _sendMessage,
-                  icon: const Icon(Icons.send_rounded),
-                  color: Theme.of(context).colorScheme.primary,
                 ),
               ],
             ),
