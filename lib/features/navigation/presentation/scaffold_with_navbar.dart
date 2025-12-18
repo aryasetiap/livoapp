@@ -1,3 +1,5 @@
+import 'dart:ui' as ui;
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:go_router/go_router.dart';
@@ -22,58 +24,71 @@ class ScaffoldWithNavBar extends StatelessWidget {
           true, // Important for floating navbar to show content behind it
       body: navigationShell,
       bottomNavigationBar: SafeArea(
-        child: Container(
-          margin: const EdgeInsets.all(12),
-          decoration: BoxDecoration(
-            color: Theme.of(context).colorScheme.surface,
+        child: Padding(
+          padding: const EdgeInsets.all(12),
+          child: ClipRRect(
             borderRadius: BorderRadius.circular(30),
-            border: Border.all(
-              color: Colors.white.withValues(alpha: 0.1),
-              width: 0.5,
-            ),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withValues(alpha: 0.3),
-                blurRadius: 20,
-                offset: const Offset(0, 10),
+            child: BackdropFilter(
+              filter: ui.ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+              child: Container(
+                decoration: BoxDecoration(
+                  color: Colors.black.withValues(
+                    alpha: 0.5,
+                  ), // Semi-transparent black
+                  borderRadius: BorderRadius.circular(30),
+                  border: Border.all(
+                    color: Colors.white.withValues(alpha: 0.1),
+                    width: 0.5,
+                  ),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withValues(alpha: 0.3),
+                      blurRadius: 20,
+                      offset: const Offset(0, 10),
+                    ),
+                  ],
+                ),
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 8,
+                    vertical: 8,
+                  ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceAround,
+                    children: [
+                      _buildNavItem(
+                        context,
+                        index: 0,
+                        icon: CupertinoIcons.house_fill,
+                        label: 'Home',
+                        isSelected: navigationShell.currentIndex == 0,
+                      ),
+                      _buildNavItem(
+                        context,
+                        index: 1,
+                        icon: CupertinoIcons.compass,
+                        label: 'Explore',
+                        isSelected: navigationShell.currentIndex == 1,
+                      ),
+                      _buildCenterNavItem(context),
+                      _buildNavItem(
+                        context,
+                        index: 3,
+                        icon: CupertinoIcons.chat_bubble_2,
+                        label: 'Chat',
+                        isSelected: navigationShell.currentIndex == 3,
+                      ),
+                      _buildNavItem(
+                        context,
+                        index: 4,
+                        icon: CupertinoIcons.person_crop_circle,
+                        label: 'Profile',
+                        isSelected: navigationShell.currentIndex == 4,
+                      ),
+                    ],
+                  ),
+                ),
               ),
-            ],
-          ),
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceAround,
-              children: [
-                _buildNavItem(
-                  context,
-                  index: 0,
-                  icon: Icons.grid_view_rounded,
-                  label: 'Home',
-                  isSelected: navigationShell.currentIndex == 0,
-                ),
-                _buildNavItem(
-                  context,
-                  index: 1,
-                  icon: Icons.explore_rounded,
-                  label: 'Explore',
-                  isSelected: navigationShell.currentIndex == 1,
-                ),
-                _buildCenterNavItem(context),
-                _buildNavItem(
-                  context,
-                  index: 3,
-                  icon: Icons.chat_bubble_rounded,
-                  label: 'Chat',
-                  isSelected: navigationShell.currentIndex == 3,
-                ),
-                _buildNavItem(
-                  context,
-                  index: 4,
-                  icon: Icons.person_rounded,
-                  label: 'Profile',
-                  isSelected: navigationShell.currentIndex == 4,
-                ),
-              ],
             ),
           ),
         ),
@@ -142,7 +157,7 @@ class ScaffoldWithNavBar extends StatelessWidget {
             ),
           ],
         ),
-        child: const Icon(Icons.add_rounded, color: Colors.white, size: 28),
+        child: const Icon(CupertinoIcons.add, color: Colors.white, size: 28),
       ).animate().scale(duration: 200.ms, curve: Curves.easeOutBack).fadeIn(),
     );
   }
