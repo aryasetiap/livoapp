@@ -18,6 +18,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   final _formKey = GlobalKey<FormState>();
+  bool _isObscure = true;
 
   @override
   void dispose() {
@@ -219,11 +220,26 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                               TextFormField(
                                 controller: _passwordController,
                                 style: const TextStyle(color: Colors.white),
-                                decoration: const InputDecoration(
+                                decoration: InputDecoration(
+                                  // Removed const
                                   labelText: 'Kata Sandi',
-                                  prefixIcon: Icon(
+                                  prefixIcon: const Icon(
+                                    // Added const
                                     Icons.lock_outline,
                                     color: AppTheme.primaryColor,
+                                  ),
+                                  suffixIcon: IconButton(
+                                    icon: Icon(
+                                      _isObscure
+                                          ? Icons.visibility_off_outlined
+                                          : Icons.visibility_outlined,
+                                      color: Colors.white54,
+                                    ),
+                                    onPressed: () {
+                                      setState(() {
+                                        _isObscure = !_isObscure;
+                                      });
+                                    },
                                   ),
                                   border: InputBorder.none,
                                   enabledBorder: InputBorder.none,
@@ -231,7 +247,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                                   contentPadding: EdgeInsets.zero,
                                   filled: false,
                                 ),
-                                obscureText: true,
+                                obscureText: _isObscure,
                                 validator: (value) =>
                                     value == null || value.isEmpty
                                     ? 'Kata sandi kosong'

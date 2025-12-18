@@ -19,6 +19,7 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
   final _passwordController = TextEditingController();
   final _usernameController = TextEditingController();
   final _formKey = GlobalKey<FormState>();
+  bool _agreeToTerms = false;
 
   @override
   void dispose() {
@@ -29,6 +30,14 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
   }
 
   Future<void> _signup() async {
+    if (!_agreeToTerms) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Anda harus menyetujui Syarat & Ketentuan'),
+        ),
+      );
+      return;
+    }
     if (_formKey.currentState!.validate()) {
       await ref
           .read(authControllerProvider.notifier)
@@ -245,11 +254,62 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
                                   filled: false,
                                 ),
                                 obscureText: true,
+                                onChanged: (value) {
+                                  setState(() {});
+                                },
                                 validator: (value) =>
                                     value == null || value.length < 6
                                     ? 'Minimal 6 karakter'
                                     : null,
                               ),
+                              const SizedBox(height: 8),
+                              // Password Strength Indicator
+                              if (_passwordController.text.isNotEmpty)
+                                Row(
+                                  children: [
+                                    Expanded(
+                                      child: ClipRRect(
+                                        borderRadius: BorderRadius.circular(4),
+                                        child: LinearProgressIndicator(
+                                          value:
+                                              _passwordController.text.length /
+                                              10,
+                                          backgroundColor: Colors.white
+                                              .withValues(alpha: 0.1),
+                                          color:
+                                              _passwordController.text.length <
+                                                  6
+                                              ? Colors.red
+                                              : _passwordController
+                                                        .text
+                                                        .length <
+                                                    8
+                                              ? Colors.orange
+                                              : Colors.green,
+                                          minHeight: 4,
+                                        ),
+                                      ),
+                                    ),
+                                    const SizedBox(width: 8),
+                                    Text(
+                                      _passwordController.text.length < 6
+                                          ? 'Lemah'
+                                          : _passwordController.text.length < 8
+                                          ? 'Sedang'
+                                          : 'Kuat',
+                                      style: TextStyle(
+                                        color:
+                                            _passwordController.text.length < 6
+                                            ? Colors.red
+                                            : _passwordController.text.length <
+                                                  8
+                                            ? Colors.orange
+                                            : Colors.green,
+                                        fontSize: 12,
+                                      ),
+                                    ),
+                                  ],
+                                ).animate().fadeIn(),
                             ],
                           ),
                         )
@@ -257,7 +317,51 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
                         .fadeIn(delay: 400.ms)
                         .slideY(begin: 0.2, end: 0),
 
-                    const SizedBox(height: 32),
+                    // Terms of Service Checkbox
+                    Row(
+                      children: [
+                        Checkbox(
+                          value: _agreeToTerms,
+                          activeColor: AppTheme.primaryColor,
+                          side: const BorderSide(color: Colors.white54),
+                          onChanged: (value) {
+                            setState(() {
+                              _agreeToTerms = value ?? false;
+                            });
+                          },
+                        ),
+                        Expanded(
+                          child: Text.rich(
+                            TextSpan(
+                              text: 'Saya setuju dengan ',
+                              style: const TextStyle(
+                                color: Colors.white70,
+                                fontSize: 12,
+                              ),
+                              children: [
+                                TextSpan(
+                                  text: 'Syarat & Ketentuan',
+                                  style: GoogleFonts.inter(
+                                    color: AppTheme.primaryColor,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                                const TextSpan(text: ' serta '),
+                                TextSpan(
+                                  text: 'Kebijakan Privasi',
+                                  style: GoogleFonts.inter(
+                                    color: AppTheme.primaryColor,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ],
+                    ).animate().fadeIn(delay: 500.ms),
+
+                    const SizedBox(height: 24),
 
                     ElevatedButton(
                       onPressed: state.isLoading ? null : _signup,
