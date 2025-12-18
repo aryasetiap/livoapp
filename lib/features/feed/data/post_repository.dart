@@ -209,4 +209,14 @@ class PostRepository {
       );
     }
   }
+
+  Future<List<PostModel>> searchPosts(String query) async {
+    final response = await _supabase
+        .from('posts')
+        .select('*, profiles(username, avatar_url), likes(count)')
+        .ilike('caption', '%$query%')
+        .order('created_at', ascending: false);
+
+    return response.map((json) => PostModel.fromJson(json)).toList();
+  }
 }
