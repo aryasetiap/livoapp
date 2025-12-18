@@ -47,8 +47,9 @@ class AuthRepository {
       '234253323510-j6qrjvbh8i787c5v5r9spb9r78k175hc.apps.googleusercontent.com';
 
   Future<AuthResponse> signInWithGoogle() async {
-    final GoogleSignIn googleSignIn =
-        GoogleSignIn(serverClientId: _webClientId);
+    final GoogleSignIn googleSignIn = GoogleSignIn(
+      serverClientId: _webClientId,
+    );
 
     final GoogleSignInAccount? googleUser = await googleSignIn.signIn();
     if (googleUser == null) {
@@ -76,8 +77,9 @@ class AuthRepository {
 
   Future<void> signOut() async {
     try {
-      final GoogleSignIn googleSignIn =
-          GoogleSignIn(serverClientId: _webClientId);
+      final GoogleSignIn googleSignIn = GoogleSignIn(
+        serverClientId: _webClientId,
+      );
       await googleSignIn.signOut();
     } catch (e) {
       debugPrint('Error signing out of Google: $e');
@@ -242,5 +244,14 @@ class AuthRepository {
 
     final List<dynamic> data = response as List<dynamic>;
     return data.map((e) => e['following_id'] as String).toList();
+  }
+
+  Future<bool> checkUsernameAvailability(String username) async {
+    final response = await _supabase
+        .from('profiles')
+        .select('username')
+        .eq('username', username.trim())
+        .maybeSingle();
+    return response == null;
   }
 }

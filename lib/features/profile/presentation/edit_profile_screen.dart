@@ -11,6 +11,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:lvoapp/features/auth/domain/user_model.dart';
+import 'package:lvoapp/features/auth/data/auth_repository.dart';
 import 'package:flutter_image_compress/flutter_image_compress.dart';
 import 'package:lvoapp/features/profile/presentation/profile_screen.dart';
 import 'package:path/path.dart' as path;
@@ -27,19 +28,29 @@ class EditProfileScreen extends ConsumerStatefulWidget {
 }
 
 class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
+  late TextEditingController _nameController; // New
+  late TextEditingController _usernameController; // New
   late TextEditingController _bioController;
+  late TextEditingController _websiteController; // New
   File? _imageFile;
   bool _isLoading = false;
+  String? _usernameError; // For validation error
 
   @override
   void initState() {
     super.initState();
+    _nameController = TextEditingController(text: widget.user.fullName);
+    _usernameController = TextEditingController(text: widget.user.username);
     _bioController = TextEditingController(text: widget.user.bio);
+    _websiteController = TextEditingController(text: widget.user.website);
   }
 
   @override
   void dispose() {
+    _nameController.dispose();
+    _usernameController.dispose();
     _bioController.dispose();
+    _websiteController.dispose();
     super.dispose();
   }
 
@@ -75,7 +86,39 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
   Future<void> _saveProfile() async {
     setState(() {
       _isLoading = true;
+      _usernameError = null;
     });
+
+    final newUsername = _usernameController.text.trim();
+    if (newUsername.isEmpty) {
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+          _usernameError = 'Username tidak boleh kosong';
+        });
+      }
+      return;
+    }
+
+    // Check availability if changed
+    if (newUsername != widget.user.username) {
+      try {
+        final isAvailable = await ref
+            .read(authRepositoryProvider)
+            .checkUsernameAvailability(newUsername);
+        if (!isAvailable) {
+          if (mounted) {
+            setState(() {
+              _isLoading = false;
+              _usernameError = 'Username sudah digunakan';
+            });
+          }
+          return;
+        }
+      } catch (e) {
+        // Ignore error check for now or handle gracefully
+      }
+    }
 
     try {
       final supabase = Supabase.instance.client;
@@ -105,7 +148,10 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
       await supabase
           .from('profiles')
           .update({
+            'username': newUsername,
+            'full_name': _nameController.text.trim(),
             'bio': _bioController.text.trim(),
+            'website': _websiteController.text.trim(),
             if (avatarUrl != null) 'avatar_url': avatarUrl,
           })
           .eq('id', widget.user.id);
@@ -316,55 +362,112 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
 
                 const SizedBox(height: 48),
 
-                ClipRRect(
-                      borderRadius: BorderRadius.circular(16),
-                      child: BackdropFilter(
-                        filter: ui.ImageFilter.blur(sigmaX: 10, sigmaY: 10),
-                        child: Container(
-                          padding: const EdgeInsets.all(4),
-                          decoration: BoxDecoration(
-                            color: Colors.white.withValues(alpha: 0.05),
-                            borderRadius: BorderRadius.circular(16),
-                            border: Border.all(
-                              color: Colors.white.withValues(alpha: 0.1),
-                            ),
-                          ),
-                          child: TextField(
-                            controller: _bioController,
-                            style: GoogleFonts.inter(color: Colors.white),
-                            decoration: InputDecoration(
-                              labelText: 'Bio',
-                              labelStyle: GoogleFonts.inter(
-                                color: Colors.white70,
-                              ),
-                              alignLabelWithHint: true,
-                              border: InputBorder.none,
-                              contentPadding: const EdgeInsets.all(16),
-                              enabledBorder: InputBorder.none,
-                              focusedBorder: InputBorder.none,
-                            ),
-                            maxLines: 4,
-                            maxLength: 150,
-                          ),
-                        ),
+                // Name Field
+                _buildInputContainer(
+                      child: TextField(
+                        controller: _nameController,
+                        style: GoogleFonts.inter(color: Colors.white),
+                        decoration: _buildInputDecoration('Nama Lengkap'),
                       ),
                     )
                     .animate()
-                    .slideY(begin: 0.2, end: 0, duration: 400.ms, delay: 100.ms)
+                    .slideY(begin: 0.1, end: 0, duration: 300.ms)
                     .fadeIn(),
 
                 const SizedBox(height: 16),
 
+                // Username Field
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    _buildInputContainer(
+                      child: TextField(
+                        controller: _usernameController,
+                        style: GoogleFonts.inter(color: Colors.white),
+                        decoration: _buildInputDecoration('Username'),
+                      ),
+                    ),
+                    if (_usernameError != null)
+                      Padding(
+                        padding: const EdgeInsets.only(top: 6, left: 4),
+                        child: Text(
+                          _usernameError!,
+                          style: GoogleFonts.inter(
+                            color: Colors.redAccent,
+                            fontSize: 12,
+                          ),
+                        ),
+                      ),
+                  ],
+                ).animate().slideY(begin: 0.1, end: 0, delay: 100.ms).fadeIn(),
+
+                const SizedBox(height: 16),
+
+                // Website Field
+                _buildInputContainer(
+                  child: TextField(
+                    controller: _websiteController,
+                    style: GoogleFonts.inter(color: Colors.white),
+                    decoration: _buildInputDecoration('Website'),
+                  ),
+                ).animate().slideY(begin: 0.1, end: 0, delay: 200.ms).fadeIn(),
+
+                const SizedBox(height: 16),
+
+                // Bio Field
+                _buildInputContainer(
+                  child: TextField(
+                    controller: _bioController,
+                    style: GoogleFonts.inter(color: Colors.white),
+                    decoration: _buildInputDecoration(
+                      'Bio',
+                    ).copyWith(alignLabelWithHint: true),
+                    maxLines: 4,
+                    maxLength: 150,
+                  ),
+                ).animate().slideY(begin: 0.1, end: 0, delay: 300.ms).fadeIn(),
+
+                const SizedBox(height: 16),
+
                 Text(
-                  'Ceritakan sedikit tentang dirimu agar orang lain bisa mengenalmu lebih baik.',
+                  'Informasi profil Anda dapat dilihat oleh pengguna lain.',
                   textAlign: TextAlign.center,
                   style: GoogleFonts.inter(color: Colors.white30, fontSize: 12),
-                ).animate().fadeIn(delay: 300.ms),
+                ).animate().fadeIn(delay: 400.ms),
               ],
             ),
           ),
         ],
       ),
+    );
+  }
+
+  Widget _buildInputContainer({required Widget child}) {
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(16),
+      child: BackdropFilter(
+        filter: ui.ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+        child: Container(
+          padding: const EdgeInsets.all(4),
+          decoration: BoxDecoration(
+            color: Colors.white.withValues(alpha: 0.05),
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
+          ),
+          child: child,
+        ),
+      ),
+    );
+  }
+
+  InputDecoration _buildInputDecoration(String label) {
+    return InputDecoration(
+      labelText: label,
+      labelStyle: GoogleFonts.inter(color: Colors.white70),
+      border: InputBorder.none,
+      contentPadding: const EdgeInsets.all(16),
+      enabledBorder: InputBorder.none,
+      focusedBorder: InputBorder.none,
     );
   }
 }

@@ -6,8 +6,11 @@ part 'user_model.g.dart';
 class UserModel {
   final String id;
   final String username;
+  @JsonKey(name: 'full_name')
+  final String? fullName;
   final String? email; // Made nullable
   final String? bio;
+  final String? website;
   @JsonKey(name: 'avatar_url')
   final String? avatarUrl;
   @JsonKey(name: 'created_at')
@@ -21,8 +24,10 @@ class UserModel {
   UserModel({
     required this.id,
     required this.username,
+    this.fullName,
     this.email, // Optional
     this.bio,
+    this.website,
     this.avatarUrl,
     required this.createdAt,
     this.followersCount = 0,
@@ -36,8 +41,10 @@ class UserModel {
 
   UserModel copyWith({
     String? username,
+    String? fullName,
     String? email,
     String? bio,
+    String? website,
     String? avatarUrl,
     int? followersCount,
     int? followingCount,
@@ -46,8 +53,10 @@ class UserModel {
     return UserModel(
       id: id,
       username: username ?? this.username,
+      fullName: fullName ?? this.fullName,
       email: email ?? this.email,
       bio: bio ?? this.bio,
+      website: website ?? this.website,
       avatarUrl: avatarUrl ?? this.avatarUrl,
       createdAt: createdAt,
       followersCount: followersCount ?? this.followersCount,

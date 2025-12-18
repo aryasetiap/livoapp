@@ -14,6 +14,7 @@ import 'package:lvoapp/features/auth/domain/user_model.dart';
 import 'package:lvoapp/features/feed/data/post_repository.dart';
 import 'package:lvoapp/features/feed/domain/post_model.dart';
 import 'package:lvoapp/features/moderation/data/moderation_repository.dart';
+import 'package:lvoapp/features/feed/presentation/widgets/post_item.dart';
 
 final profileProvider = FutureProvider.family<UserModel, String>((ref, userId) {
   return ref.watch(authRepositoryProvider).getProfile(userId);
@@ -37,6 +38,7 @@ class ProfileScreen extends ConsumerStatefulWidget {
 
 class _ProfileScreenState extends ConsumerState<ProfileScreen> {
   bool _isFollowingLoading = false;
+  bool _isGridView = true;
 
   Future<void> _toggleFollow(String userId, bool isFollowing) async {
     setState(() {
@@ -274,8 +276,12 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                 ),
                 SliverToBoxAdapter(
                   child: profileState.when(
-                    data: (user) =>
-                        _buildProfileHeader(context, user, currentUserId),
+                    data: (user) => _buildProfileHeader(
+                      context,
+                      user,
+                      currentUserId,
+                      postsState.valueOrNull?.length ?? 0,
+                    ),
                     loading: () => const Padding(
                       padding: EdgeInsets.all(32.0),
                       child: Center(child: CircularProgressIndicator()),
@@ -320,39 +326,62 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                           ),
                         );
                       }
-                      return SliverGrid(
-                        gridDelegate:
-                            const SliverGridDelegateWithFixedCrossAxisCount(
-                              crossAxisCount: 3,
-                              crossAxisSpacing: 2,
-                              mainAxisSpacing: 2,
-                            ),
-                        delegate: SliverChildBuilderDelegate((context, index) {
-                          final post = posts[index];
-                          return GestureDetector(
-                            onTap: () {
-                              context.push('/post/${post.id}', extra: post);
-                            },
-                            child: Hero(
-                              tag: 'post_${post.id}',
-                              child: CachedNetworkImage(
-                                imageUrl: post.imageUrl,
-                                fit: BoxFit.cover,
-                                placeholder: (context, url) => Container(
-                                  color: Colors.white.withValues(alpha: 0.05),
-                                ),
-                                errorWidget: (context, url, error) => Container(
-                                  color: Colors.white.withValues(alpha: 0.05),
-                                  child: const Icon(
-                                    CupertinoIcons.exclamationmark_triangle,
-                                    color: Colors.white30,
+
+                      if (_isGridView) {
+                        return SliverGrid(
+                          gridDelegate:
+                              const SliverGridDelegateWithFixedCrossAxisCount(
+                                crossAxisCount: 3,
+                                crossAxisSpacing: 2,
+                                mainAxisSpacing: 2,
+                              ),
+                          delegate: SliverChildBuilderDelegate((
+                            context,
+                            index,
+                          ) {
+                            final post = posts[index];
+                            return GestureDetector(
+                              onTap: () {
+                                context.push('/post/${post.id}', extra: post);
+                              },
+                              child: Hero(
+                                tag: 'post_grid_${post.id}',
+                                child: CachedNetworkImage(
+                                  imageUrl: post.imageUrl,
+                                  fit: BoxFit.cover,
+                                  placeholder: (context, url) => Container(
+                                    color: Colors.white.withValues(alpha: 0.05),
                                   ),
+                                  errorWidget: (context, url, error) =>
+                                      Container(
+                                        color: Colors.white.withValues(
+                                          alpha: 0.05,
+                                        ),
+                                        child: const Icon(
+                                          CupertinoIcons
+                                              .exclamationmark_triangle,
+                                          color: Colors.white30,
+                                        ),
+                                      ),
                                 ),
                               ),
-                            ),
-                          );
-                        }, childCount: posts.length),
-                      );
+                            );
+                          }, childCount: posts.length),
+                        );
+                      } else {
+                        return SliverList(
+                          delegate: SliverChildBuilderDelegate((
+                            context,
+                            index,
+                          ) {
+                            final post = posts[index];
+                            return Padding(
+                              padding: const EdgeInsets.only(bottom: 16.0),
+                              child: PostItem(post: post),
+                            );
+                          }, childCount: posts.length),
+                        );
+                      }
                     },
                     loading: () => const SliverToBoxAdapter(
                       child: Padding(
@@ -385,6 +414,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
     BuildContext context,
     UserModel user,
     String? currentUserId,
+    int postCount,
   ) {
     final isMe = currentUserId == user.id;
 
@@ -428,7 +458,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceAround,
                   children: [
-                    // _buildStatItem('Postingan', '0'), // Removed placeholder
+                    _buildStatItem('Postingan', '$postCount'),
                     _buildStatItem('Pengikut', '${user.followersCount}'),
                     _buildStatItem('Mengikuti', '${user.followingCount}'),
                   ],
@@ -452,6 +482,17 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
               style: GoogleFonts.inter(
                 color: Colors.white.withValues(alpha: 0.8),
                 fontSize: 14,
+              ),
+            ),
+          ],
+          if (user.website != null && user.website!.isNotEmpty) ...[
+            const SizedBox(height: 4),
+            Text(
+              user.website!,
+              style: GoogleFonts.inter(
+                color: Colors.blueAccent,
+                fontSize: 14,
+                fontWeight: FontWeight.w500,
               ),
             ),
           ],
@@ -546,6 +587,64 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                 ],
               ),
             ),
+          const SizedBox(height: 24),
+          // Content Toggles
+          Row(
+            children: [
+              Expanded(
+                child: GestureDetector(
+                  onTap: () {
+                    setState(() {
+                      _isGridView = true;
+                    });
+                  },
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(vertical: 12),
+                    decoration: BoxDecoration(
+                      border: Border(
+                        bottom: BorderSide(
+                          color: _isGridView
+                              ? Colors.white
+                              : Colors.white.withValues(alpha: 0.1),
+                          width: 2,
+                        ),
+                      ),
+                    ),
+                    child: Icon(
+                      CupertinoIcons.square_grid_2x2,
+                      color: _isGridView ? Colors.white : Colors.white54,
+                    ),
+                  ),
+                ),
+              ),
+              Expanded(
+                child: GestureDetector(
+                  onTap: () {
+                    setState(() {
+                      _isGridView = false;
+                    });
+                  },
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(vertical: 12),
+                    decoration: BoxDecoration(
+                      border: Border(
+                        bottom: BorderSide(
+                          color: !_isGridView
+                              ? Colors.white
+                              : Colors.white.withValues(alpha: 0.1),
+                          width: 2,
+                        ),
+                      ),
+                    ),
+                    child: Icon(
+                      CupertinoIcons.list_bullet,
+                      color: !_isGridView ? Colors.white : Colors.white54,
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
         ],
       ),
     );
