@@ -46,12 +46,25 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
           ).showSnackBar(SnackBar(content: Text(error.toString())));
         },
         data: (_) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('Hore! Akun berhasil dibuat. Silakan masuk.'),
+          showDialog(
+            context: context,
+            barrierDismissible: false,
+            builder: (context) => AlertDialog(
+              title: const Text('Cek Email Kamu'),
+              content: const Text(
+                'Tautan konfirmasi telah dikirim ke email kamu. Silakan verifikasi untuk mulai menggunakan LVO.',
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () {
+                    Navigator.pop(context); // Close dialog
+                    context.go('/login');
+                  },
+                  child: const Text('Siap!'),
+                ),
+              ],
             ),
           );
-          context.go('/login');
         },
       );
     });

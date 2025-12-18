@@ -10,6 +10,7 @@ import 'features/auth/presentation/login_screen.dart';
 import 'features/auth/presentation/signup_screen.dart';
 import 'features/auth/presentation/splash_screen.dart';
 import 'features/auth/presentation/forgot_password_screen.dart';
+import 'features/auth/presentation/update_password_screen.dart';
 import 'features/feed/presentation/home_screen.dart';
 import 'features/feed/presentation/create_post_screen.dart';
 import 'features/onboarding/presentation/onboarding_screen.dart';
@@ -100,6 +101,10 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/forgot-password',
         builder: (context, state) => const ForgotPasswordScreen(),
+      ),
+      GoRoute(
+        path: '/update-password',
+        builder: (context, state) => const UpdatePasswordScreen(),
       ),
       StatefulShellRoute.indexedStack(
         builder: (context, state, navigationShell) {
@@ -202,11 +207,31 @@ final routerProvider = Provider<GoRouter>((ref) {
   );
 });
 
-class LvoApp extends ConsumerWidget {
+class LvoApp extends ConsumerStatefulWidget {
   const LvoApp({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<LvoApp> createState() => _LvoAppState();
+}
+
+class _LvoAppState extends ConsumerState<LvoApp> {
+  @override
+  void initState() {
+    super.initState();
+    _setupAuthListener();
+  }
+
+  void _setupAuthListener() {
+    Supabase.instance.client.auth.onAuthStateChange.listen((data) {
+      final event = data.event;
+      if (event == AuthChangeEvent.passwordRecovery) {
+        ref.read(routerProvider).go('/update-password');
+      }
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final router = ref.watch(routerProvider);
     return MaterialApp.router(
       title: 'LVO',

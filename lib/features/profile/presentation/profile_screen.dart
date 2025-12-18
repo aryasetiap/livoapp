@@ -138,13 +138,34 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                 );
               },
             ),
-          if (widget.userId == null)
-            IconButton(
-              onPressed: () {
-                ref.read(authRepositoryProvider).signOut();
-              },
-              icon: const Icon(Icons.logout_rounded, color: Colors.red),
-            ),
+          IconButton(
+            onPressed: () {
+              showDialog(
+                context: context,
+                builder: (context) => AlertDialog(
+                  title: const Text('Keluar Aplikasi'),
+                  content: const Text('Apakah Anda yakin ingin keluar?'),
+                  actions: [
+                    TextButton(
+                      onPressed: () => Navigator.pop(context),
+                      child: const Text('Batal'),
+                    ),
+                    TextButton(
+                      onPressed: () {
+                        Navigator.pop(context);
+                        ref.read(authRepositoryProvider).signOut();
+                      },
+                      child: const Text(
+                        'Keluar',
+                        style: TextStyle(color: Colors.red),
+                      ),
+                    ),
+                  ],
+                ),
+              );
+            },
+            icon: const Icon(Icons.logout_rounded, color: Colors.red),
+          ),
         ],
       ),
       body: RefreshIndicator(

@@ -72,4 +72,11 @@ class AuthController extends StateNotifier<AsyncValue<void>> {
       () => _authRepository.resetPassword(email: email),
     );
   }
+
+  Future<void> updatePassword({required String newPassword}) async {
+    state = const AsyncValue.loading();
+    state = await AsyncValue.guard(
+      () => _authRepository.updatePassword(newPassword),
+    );
+  }
 }

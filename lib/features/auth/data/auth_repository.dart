@@ -43,11 +43,12 @@ class AuthRepository {
     );
   }
 
-  Future<AuthResponse> signInWithGoogle() async {
-    const webClientId =
-        '234253323510-j6qrjvbh8i787c5v5r9spb9r78k175hc.apps.googleusercontent.com';
+  static const _webClientId =
+      '234253323510-j6qrjvbh8i787c5v5r9spb9r78k175hc.apps.googleusercontent.com';
 
-    final GoogleSignIn googleSignIn = GoogleSignIn(serverClientId: webClientId);
+  Future<AuthResponse> signInWithGoogle() async {
+    final GoogleSignIn googleSignIn =
+        GoogleSignIn(serverClientId: _webClientId);
 
     final GoogleSignInAccount? googleUser = await googleSignIn.signIn();
     if (googleUser == null) {
@@ -74,11 +75,25 @@ class AuthRepository {
   }
 
   Future<void> signOut() async {
+    try {
+      final GoogleSignIn googleSignIn =
+          GoogleSignIn(serverClientId: _webClientId);
+      await googleSignIn.signOut();
+    } catch (e) {
+      debugPrint('Error signing out of Google: $e');
+    }
     await _auth.signOut();
   }
 
   Future<void> resetPassword({required String email}) async {
-    await _auth.resetPasswordForEmail(email);
+    await _auth.resetPasswordForEmail(
+      email,
+      redirectTo: 'io.supabase.lvoapp://reset-callback',
+    );
+  }
+
+  Future<void> updatePassword(String newPassword) async {
+    await _auth.updateUser(UserAttributes(password: newPassword));
   }
 
   Future<void> followUser(String userId) async {
