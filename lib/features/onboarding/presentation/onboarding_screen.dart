@@ -4,6 +4,7 @@ import 'package:flutter_animate/flutter_animate.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:smooth_page_indicator/smooth_page_indicator.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../../../core/config/theme.dart';
 
 class OnboardingScreen extends StatefulWidget {
@@ -130,7 +131,11 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                   child: Padding(
                     padding: const EdgeInsets.only(right: 16, top: 16),
                     child: TextButton(
-                      onPressed: () => context.go('/login'),
+                      onPressed: () async {
+                        final prefs = await SharedPreferences.getInstance();
+                        await prefs.setBool('onboarding_seen', true);
+                        if (context.mounted) context.go('/login');
+                      },
                       style: TextButton.styleFrom(
                         foregroundColor: Colors.white70,
                       ),
@@ -293,9 +298,12 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                           ],
                         ),
                         child: ElevatedButton(
-                          onPressed: () {
+                          onPressed: () async {
                             if (_isLastPage) {
-                              context.go('/login');
+                              final prefs =
+                                  await SharedPreferences.getInstance();
+                              await prefs.setBool('onboarding_seen', true);
+                              if (context.mounted) context.go('/login');
                             } else {
                               _pageController.nextPage(
                                 duration: const Duration(milliseconds: 400),

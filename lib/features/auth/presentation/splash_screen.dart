@@ -4,6 +4,8 @@ import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+
 import '../../auth/data/auth_repository.dart';
 import '../../../core/config/theme.dart';
 
@@ -61,7 +63,17 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
     if (user != null) {
       context.go('/home');
     } else {
-      context.go('/onboarding');
+      // Check if onboarding has been seen
+      final prefs = await SharedPreferences.getInstance();
+      final seenOnboarding = prefs.getBool('onboarding_seen') ?? false;
+
+      if (mounted) {
+        if (seenOnboarding) {
+          context.go('/login');
+        } else {
+          context.go('/onboarding');
+        }
+      }
     }
   }
 
