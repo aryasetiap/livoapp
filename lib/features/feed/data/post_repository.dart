@@ -143,6 +143,7 @@ class PostRepository {
         await _notificationRepository.createLikeNotification(
           postOwnerId,
           _supabase.auth.currentUser?.userMetadata?['username'] ?? 'User',
+          postId,
         );
       }
     } catch (e) {
@@ -206,6 +207,7 @@ class PostRepository {
       await _notificationRepository.createCommentNotification(
         postOwnerId,
         _supabase.auth.currentUser?.userMetadata?['username'] ?? 'User',
+        postId,
       );
     }
   }
@@ -218,5 +220,35 @@ class PostRepository {
         .order('created_at', ascending: false);
 
     return response.map((json) => PostModel.fromJson(json)).toList();
+  }
+
+  Future<PostModel?> getPostById(String postId) async {
+    final userId = _supabase.auth.currentUser?.id;
+
+    try {
+      final response = await _supabase
+          .from('posts')
+          .select('*, profiles(username, avatar_url), likes(count)')
+          .eq('id', postId)
+          .single();
+
+      var post = PostModel.fromJson(response);
+
+      // Check if liked
+      if (userId != null) {
+        final likedResponse = await _supabase
+            .from('likes')
+            .select('post_id')
+            .eq('user_id', userId)
+            .eq('post_id', postId)
+            .maybeSingle();
+
+        post = post.copyWith(isLiked: likedResponse != null);
+      }
+
+      return post;
+    } catch (e) {
+      return null;
+    }
   }
 }

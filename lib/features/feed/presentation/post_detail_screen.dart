@@ -21,9 +21,10 @@ final commentsProvider = FutureProvider.family<List<CommentModel>, String>((
 });
 
 class PostDetailScreen extends ConsumerStatefulWidget {
-  final PostModel post;
+  final PostModel? post;
+  final String? postId;
 
-  const PostDetailScreen({super.key, required this.post});
+  const PostDetailScreen({super.key, this.post, this.postId});
 
   @override
   ConsumerState<PostDetailScreen> createState() => _PostDetailScreenState();
@@ -33,8 +34,43 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
   final _commentController = TextEditingController();
   bool _isSubmitting = false;
   bool _isReporting = false;
+  bool _isLoadingPost = false;
+  PostModel? _post;
+
+  @override
+  void initState() {
+    super.initState();
+    _post = widget.post;
+    if (_post == null && widget.postId != null) {
+      _loadPost(widget.postId!);
+    }
+  }
+
+  Future<void> _loadPost(String postId) async {
+    setState(() {
+      _isLoadingPost = true;
+    });
+    try {
+      final post = await ref.read(postRepositoryProvider).getPostById(postId);
+      if (mounted) {
+        setState(() {
+          _post = post;
+        });
+      }
+    } catch (e) {
+      // Handle error
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isLoadingPost = false;
+        });
+      }
+    }
+  }
 
   Future<void> _submitComment() async {
+    if (_post == null) return;
+
     final content = _commentController.text.trim();
     if (content.isEmpty) return;
 
@@ -43,12 +79,10 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
     });
 
     try {
-      await ref
-          .read(postRepositoryProvider)
-          .addComment(widget.post.id, content);
+      await ref.read(postRepositoryProvider).addComment(_post!.id, content);
       _commentController.clear();
       // Refresh comments
-      ref.invalidate(commentsProvider(widget.post.id));
+      ref.invalidate(commentsProvider(_post!.id));
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(
@@ -65,6 +99,8 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
   }
 
   void _showReportDialog() {
+    if (_post == null) return;
+
     final reportReasonController = TextEditingController();
     String? selectedReason;
 
@@ -157,7 +193,7 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
                           await ref
                               .read(moderationRepositoryProvider)
                               .reportPost(
-                                postId: widget.post.id,
+                                postId: _post!.id,
                                 reason: selectedReason!,
                               );
 
@@ -202,7 +238,18 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final commentsState = ref.watch(commentsProvider(widget.post.id));
+    if (_isLoadingPost) {
+      return const Scaffold(body: Center(child: CircularProgressIndicator()));
+    }
+
+    if (_post == null) {
+      return Scaffold(
+        appBar: AppBar(title: const Text('Error')),
+        body: const Center(child: Text('Postingan tidak ditemukan')),
+      );
+    }
+
+    final commentsState = ref.watch(commentsProvider(_post!.id));
 
     return Scaffold(
       extendBodyBehindAppBar: true,
@@ -291,7 +338,7 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
                   child: CustomScrollView(
                     slivers: [
                       SliverToBoxAdapter(
-                        child: PostItem(post: widget.post, isDetail: true),
+                        child: PostItem(post: _post!, isDetail: true),
                       ),
                       SliverToBoxAdapter(
                         child: Padding(

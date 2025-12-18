@@ -129,34 +129,16 @@ class NotificationRepository {
   Future<void> createLikeNotification(
     String postOwnerId,
     String likerUsername,
+    String postId,
   ) async {
     // Don't notify if user likes their own post
     if (postOwnerId == _auth.currentUser?.id) return;
 
-    // Note: In a real app, you'd want to insert this for the postOwnerId, not the current user (liker).
-    // The current implementation of createNotification uses _auth.currentUser?.id as user_id.
-    // We need to modify createNotification or pass the targetUserId explicitly.
-    // For now, I will assume createNotification needs to be updated to accept targetUserId.
-    // However, to minimize changes and follow the existing pattern, I'll adjust the insert logic here directly
-    // or assume the previous implementation was intended for the current user to see their OWN actions?
-    // No, notifications are for OTHER users.
-
-    // Correcting logic: The notification should be created for the postOwnerId.
-    // But createNotification uses _auth.currentUser?.id.
-    // I will overload createNotification or create a new internal method.
-    // Actually, let's just use _supabase directly here for correctness or update createNotification.
-
-    // Updating createNotification to accept targetUserId would be best, but let's stick to the requested fixes first.
-    // Wait, the previous code had:
-    // 'user_id': currentUserId,
-    // This means the notification is created FOR the current user. That's wrong for a "Like" notification.
-    // If I like your post, YOU should get the notification.
-
-    // I will update createNotification to take a targetUserId.
     await _createNotificationForUser(
       targetUserId: postOwnerId,
       type: 'like',
       title: '$likerUsername menyukai postingan Anda',
+      relatedId: postId,
       relatedUserId: _auth.currentUser?.id,
     );
   }
@@ -164,6 +146,7 @@ class NotificationRepository {
   Future<void> createCommentNotification(
     String postOwnerId,
     String commenterUsername,
+    String postId,
   ) async {
     if (postOwnerId == _auth.currentUser?.id) return;
 
@@ -171,6 +154,7 @@ class NotificationRepository {
       targetUserId: postOwnerId,
       type: 'comment',
       title: '$commenterUsername mengomentar postingan Anda',
+      relatedId: postId,
       relatedUserId: _auth.currentUser?.id,
     );
   }

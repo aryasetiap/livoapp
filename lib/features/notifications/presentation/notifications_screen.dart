@@ -1,4 +1,5 @@
 import 'dart:ui' as ui;
+import 'package:go_router/go_router.dart';
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -210,6 +211,19 @@ class NotificationsScreen extends ConsumerWidget {
                                             notification.id,
                                           );
                                       ref.invalidate(notificationsProvider);
+                                    }
+
+                                    if ((notification.isLike ||
+                                            notification.isComment) &&
+                                        notification.relatedId != null) {
+                                      context.push(
+                                        '/post/${notification.relatedId}',
+                                      );
+                                    } else if (notification.isFollow &&
+                                        notification.relatedUserId != null) {
+                                      context.push(
+                                        '/profile/${notification.relatedUserId}',
+                                      );
                                     }
                                   },
                                   leading: Container(
