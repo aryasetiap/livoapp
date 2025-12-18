@@ -51,13 +51,59 @@ class _CreatePostScreenState extends ConsumerState<CreatePostScreen> {
   File? _imageFile;
   final _picker = ImagePicker();
 
-  Future<void> _pickImage() async {
-    final pickedFile = await _picker.pickImage(source: ImageSource.gallery);
+  Future<void> _pickImage(ImageSource source) async {
+    final pickedFile = await _picker.pickImage(source: source);
     if (pickedFile != null) {
       setState(() {
         _imageFile = File(pickedFile.path);
       });
     }
+  }
+
+  void _showImageSourceModal(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: AppTheme.surfaceColor,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      builder: (context) => Padding(
+        padding: const EdgeInsets.all(24.0),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            ListTile(
+              leading: const Icon(
+                CupertinoIcons.camera_fill,
+                color: Colors.white,
+              ),
+              title: Text(
+                'Kamera',
+                style: GoogleFonts.outfit(color: Colors.white, fontSize: 16),
+              ),
+              onTap: () {
+                Navigator.pop(context);
+                _pickImage(ImageSource.camera);
+              },
+            ),
+            ListTile(
+              leading: const Icon(
+                CupertinoIcons.photo_fill,
+                color: Colors.white,
+              ),
+              title: Text(
+                'Galeri',
+                style: GoogleFonts.outfit(color: Colors.white, fontSize: 16),
+              ),
+              onTap: () {
+                Navigator.pop(context);
+                _pickImage(ImageSource.gallery);
+              },
+            ),
+          ],
+        ),
+      ),
+    );
   }
 
   Future<void> _submit() async {
@@ -196,9 +242,9 @@ class _CreatePostScreenState extends ConsumerState<CreatePostScreen> {
               child: Column(
                 children: [
                   GestureDetector(
-                    onTap: _pickImage,
+                    onTap: () => _showImageSourceModal(context),
                     child: Container(
-                      height: 350, // Portait/Square ratio
+                      height: 350,
                       width: double.infinity,
                       decoration: BoxDecoration(
                         color: Colors.white.withValues(alpha: 0.05),
@@ -222,25 +268,28 @@ class _CreatePostScreenState extends ConsumerState<CreatePostScreen> {
                                       fit: BoxFit.cover,
                                     ),
                                   ),
-                                  Positioned.fill(
-                                    child: Container(
-                                      color: Colors.black.withValues(
-                                        alpha: 0.2,
-                                      ),
-                                      child: Center(
-                                        child: Container(
-                                          padding: const EdgeInsets.all(12),
-                                          decoration: BoxDecoration(
-                                            color: Colors.black.withValues(
-                                              alpha: 0.5,
-                                            ),
-                                            shape: BoxShape.circle,
+                                  // Remove Image Button
+                                  Positioned(
+                                    top: 8,
+                                    right: 8,
+                                    child: GestureDetector(
+                                      onTap: () {
+                                        setState(() {
+                                          _imageFile = null;
+                                        });
+                                      },
+                                      child: Container(
+                                        padding: const EdgeInsets.all(4),
+                                        decoration: BoxDecoration(
+                                          color: Colors.black.withValues(
+                                            alpha: 0.6,
                                           ),
-                                          child: const Icon(
-                                            CupertinoIcons.camera_fill,
-                                            color: Colors.white,
-                                            size: 30,
-                                          ),
+                                          shape: BoxShape.circle,
+                                        ),
+                                        child: const Icon(
+                                          CupertinoIcons.xmark,
+                                          color: Colors.white,
+                                          size: 20,
                                         ),
                                       ),
                                     ),
@@ -259,7 +308,7 @@ class _CreatePostScreenState extends ConsumerState<CreatePostScreen> {
                                     shape: BoxShape.circle,
                                   ),
                                   child: Icon(
-                                    CupertinoIcons.photo_on_rectangle,
+                                    CupertinoIcons.camera_fill,
                                     size: 48,
                                     color: Theme.of(
                                       context,
@@ -277,7 +326,7 @@ class _CreatePostScreenState extends ConsumerState<CreatePostScreen> {
                                 ),
                                 const SizedBox(height: 8),
                                 Text(
-                                  'Dari galeri kamu',
+                                  'Ambil dari Kamera atau Galeri',
                                   style: GoogleFonts.inter(
                                     color: Colors.white54,
                                     fontSize: 14,

@@ -215,7 +215,7 @@ class _PostItemState extends ConsumerState<PostItem> {
                     ),
                     if (_likeCount > 0)
                       Text(
-                        '$_likeCount',
+                        '$_likeCount Suka',
                         style: GoogleFonts.outfit(
                           color: Colors.white,
                           fontWeight: FontWeight.w600,
