@@ -1,7 +1,14 @@
+import 'dart:ui' as ui;
+
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:google_fonts/google_fonts.dart';
+
+import 'package:lvoapp/core/config/theme.dart';
 import 'package:lvoapp/features/auth/data/auth_repository.dart';
 import 'package:lvoapp/features/auth/domain/user_model.dart';
 import 'package:lvoapp/features/feed/data/post_repository.dart';
@@ -71,11 +78,25 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
     final postsState = ref.watch(userPostsProvider(targetUserId));
 
     return Scaffold(
+      extendBodyBehindAppBar: true,
       appBar: AppBar(
+        backgroundColor: Colors.transparent,
+        flexibleSpace: ClipRRect(
+          child: BackdropFilter(
+            filter: ui.ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+            child: Container(
+              color: Theme.of(
+                context,
+              ).colorScheme.surface.withValues(alpha: 0.5),
+            ),
+          ),
+        ),
         title: Text(
           widget.userId == null ? 'Profil Saya' : 'Profil',
-          style: const TextStyle(fontWeight: FontWeight.bold),
+          style: GoogleFonts.outfit(fontWeight: FontWeight.bold),
         ),
+        centerTitle: true,
+        iconTheme: const IconThemeData(color: Colors.white),
         actions: [
           if (widget.userId != null && widget.userId != currentUserId)
             Consumer(
@@ -129,7 +150,9 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                         }
                       },
                       icon: Icon(
-                        blocked ? Icons.block : Icons.person_off_outlined,
+                        blocked
+                            ? CupertinoIcons.nosign
+                            : CupertinoIcons.person_crop_circle_badge_exclam,
                         color: blocked ? Colors.grey : Colors.red,
                       ),
                       tooltip: blocked ? 'Batal blokir' : 'Blokir user',
@@ -143,110 +166,217 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
               showDialog(
                 context: context,
                 builder: (context) => AlertDialog(
-                  title: const Text('Keluar Aplikasi'),
-                  content: const Text('Apakah Anda yakin ingin keluar?'),
+                  backgroundColor: const Color(
+                    0xFF1E1E2E,
+                  ), // Custom dark dialog
+                  title: Text(
+                    'Keluar Aplikasi',
+                    style: GoogleFonts.outfit(color: Colors.white),
+                  ),
+                  content: Text(
+                    'Apakah Anda yakin ingin keluar?',
+                    style: GoogleFonts.inter(color: Colors.white70),
+                  ),
                   actions: [
                     TextButton(
                       onPressed: () => Navigator.pop(context),
-                      child: const Text('Batal'),
+                      child: Text(
+                        'Batal',
+                        style: GoogleFonts.inter(color: Colors.white54),
+                      ),
                     ),
                     TextButton(
                       onPressed: () {
                         Navigator.pop(context);
                         ref.read(authRepositoryProvider).signOut();
                       },
-                      child: const Text(
+                      child: Text(
                         'Keluar',
-                        style: TextStyle(color: Colors.red),
+                        style: GoogleFonts.inter(
+                          color: Colors.red,
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
                     ),
                   ],
                 ),
               );
             },
-            icon: const Icon(Icons.logout_rounded, color: Colors.red),
+            icon: const Icon(
+              CupertinoIcons.square_arrow_right,
+              color: Colors.red,
+            ),
           ),
         ],
       ),
-      body: RefreshIndicator(
-        onRefresh: () async {
-          ref.invalidate(profileProvider(targetUserId));
-          ref.invalidate(userPostsProvider(targetUserId));
-        },
-        child: CustomScrollView(
-          physics: const AlwaysScrollableScrollPhysics(),
-          slivers: [
-            SliverToBoxAdapter(
-              child: profileState.when(
-                data: (user) =>
-                    _buildProfileHeader(context, user, currentUserId),
-                loading: () => const Padding(
-                  padding: EdgeInsets.all(32.0),
-                  child: Center(child: CircularProgressIndicator()),
-                ),
-                error: (error, stack) => Padding(
-                  padding: const EdgeInsets.all(32.0),
-                  child: Center(child: Text('Error: $error')),
+      body: Stack(
+        children: [
+          // 1. Background Gradient
+          Positioned.fill(
+            child: Container(
+              decoration: const BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                  colors: [
+                    AppTheme.backgroundColor,
+                    Color(0xFF1A1A2E), // Deep Dark Blue
+                    Color(0xFF2D1B4E), // Deep Purple
+                    Colors.black,
+                  ],
+                  stops: [0.0, 0.4, 0.7, 1.0],
                 ),
               ),
             ),
-            SliverPadding(
-              padding: const EdgeInsets.all(2.0),
-              sliver: postsState.when(
-                data: (posts) {
-                  if (posts.isEmpty) {
-                    return const SliverToBoxAdapter(
-                      child: Padding(
-                        padding: EdgeInsets.all(32.0),
-                        child: Center(
-                          child: Text(
-                            'Belum ada postingan',
-                            style: TextStyle(color: Colors.grey),
-                          ),
+          ),
+
+          // 2. Ambient Orbs (Animated)
+          Positioned(
+            top: -100,
+            left: -50,
+            child:
+                ImageFiltered(
+                      imageFilter: ui.ImageFilter.blur(sigmaX: 80, sigmaY: 80),
+                      child: Container(
+                        width: 300,
+                        height: 300,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          color: Theme.of(
+                            context,
+                          ).colorScheme.primary.withValues(alpha: 0.2),
                         ),
                       ),
-                    );
-                  }
-                  return SliverGrid(
-                    gridDelegate:
-                        const SliverGridDelegateWithFixedCrossAxisCount(
-                          crossAxisCount: 3,
-                          crossAxisSpacing: 2,
-                          mainAxisSpacing: 2,
-                        ),
-                    delegate: SliverChildBuilderDelegate((context, index) {
-                      final post = posts[index];
-                      return GestureDetector(
-                        onTap: () {
-                          context.push('/post/${post.id}', extra: post);
-                        },
-                        child: CachedNetworkImage(
-                          imageUrl: post.imageUrl,
-                          fit: BoxFit.cover,
-                          placeholder: (context, url) =>
-                              Container(color: Colors.grey.shade900),
-                          errorWidget: (context, url, error) => Container(
-                            color: Colors.grey.shade900,
-                            child: const Icon(Icons.error),
-                          ),
-                        ),
-                      );
-                    }, childCount: posts.length),
-                  );
-                },
-                loading: () => const SliverToBoxAdapter(
-                  child: Padding(
-                    padding: EdgeInsets.all(32.0),
-                    child: Center(child: CircularProgressIndicator()),
+                    )
+                    .animate(
+                      onPlay: (controller) => controller.repeat(reverse: true),
+                    )
+                    .scale(
+                      begin: const Offset(1, 1),
+                      end: const Offset(1.2, 1.2),
+                      duration: 6.seconds,
+                    ),
+          ),
+
+          // 3. Content
+          RefreshIndicator(
+            onRefresh: () async {
+              ref.invalidate(profileProvider(targetUserId));
+              ref.invalidate(userPostsProvider(targetUserId));
+            },
+            child: CustomScrollView(
+              physics: const AlwaysScrollableScrollPhysics(),
+              slivers: [
+                SliverToBoxAdapter(
+                  child: SizedBox(
+                    height: MediaQuery.of(context).padding.top + kToolbarHeight,
                   ),
                 ),
-                error: (error, stack) => SliverToBoxAdapter(
-                  child: Center(child: Text('Error: $error')),
+                SliverToBoxAdapter(
+                  child: profileState.when(
+                    data: (user) =>
+                        _buildProfileHeader(context, user, currentUserId),
+                    loading: () => const Padding(
+                      padding: EdgeInsets.all(32.0),
+                      child: Center(child: CircularProgressIndicator()),
+                    ),
+                    error: (error, stack) => Padding(
+                      padding: const EdgeInsets.all(32.0),
+                      child: Center(
+                        child: Text(
+                          'Error: $error',
+                          style: const TextStyle(color: Colors.red),
+                        ),
+                      ),
+                    ),
+                  ),
                 ),
-              ),
+                SliverPadding(
+                  padding: const EdgeInsets.all(2.0),
+                  sliver: postsState.when(
+                    data: (posts) {
+                      if (posts.isEmpty) {
+                        return SliverToBoxAdapter(
+                          child: Padding(
+                            padding: const EdgeInsets.all(32.0),
+                            child: Center(
+                              child: Column(
+                                children: [
+                                  Icon(
+                                    CupertinoIcons.camera,
+                                    size: 48,
+                                    color: Colors.white.withValues(alpha: 0.2),
+                                  ),
+                                  const SizedBox(height: 16),
+                                  Text(
+                                    'Belum ada postingan',
+                                    style: GoogleFonts.inter(
+                                      color: Colors.white54,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        );
+                      }
+                      return SliverGrid(
+                        gridDelegate:
+                            const SliverGridDelegateWithFixedCrossAxisCount(
+                              crossAxisCount: 3,
+                              crossAxisSpacing: 2,
+                              mainAxisSpacing: 2,
+                            ),
+                        delegate: SliverChildBuilderDelegate((context, index) {
+                          final post = posts[index];
+                          return GestureDetector(
+                            onTap: () {
+                              context.push('/post/${post.id}', extra: post);
+                            },
+                            child: Hero(
+                              tag: 'post_${post.id}',
+                              child: CachedNetworkImage(
+                                imageUrl: post.imageUrl,
+                                fit: BoxFit.cover,
+                                placeholder: (context, url) => Container(
+                                  color: Colors.white.withValues(alpha: 0.05),
+                                ),
+                                errorWidget: (context, url, error) => Container(
+                                  color: Colors.white.withValues(alpha: 0.05),
+                                  child: const Icon(
+                                    CupertinoIcons.exclamationmark_triangle,
+                                    color: Colors.white30,
+                                  ),
+                                ),
+                              ),
+                            ),
+                          );
+                        }, childCount: posts.length),
+                      );
+                    },
+                    loading: () => const SliverToBoxAdapter(
+                      child: Padding(
+                        padding: EdgeInsets.all(32.0),
+                        child: Center(child: CircularProgressIndicator()),
+                      ),
+                    ),
+                    error: (error, stack) => SliverToBoxAdapter(
+                      child: Center(
+                        child: Text(
+                          'Error: $error',
+                          style: const TextStyle(color: Colors.red),
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+                const SliverPadding(
+                  padding: EdgeInsets.only(bottom: 80),
+                ), // Bottom padding for FAB/Nav
+              ],
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
@@ -265,21 +395,40 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
         children: [
           Row(
             children: [
-              CircleAvatar(
-                radius: 40,
-                backgroundImage: user.avatarUrl != null
-                    ? CachedNetworkImageProvider(user.avatarUrl!)
-                    : null,
-                child: user.avatarUrl == null
-                    ? const Icon(Icons.person, size: 40)
-                    : null,
+              Container(
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  gradient: LinearGradient(
+                    colors: [
+                      Theme.of(context).colorScheme.primary,
+                      Theme.of(context).colorScheme.secondary,
+                    ],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                  ),
+                ),
+                padding: const EdgeInsets.all(3),
+                child: CircleAvatar(
+                  radius: 40,
+                  backgroundColor: Colors.black,
+                  backgroundImage: user.avatarUrl != null
+                      ? CachedNetworkImageProvider(user.avatarUrl!)
+                      : null,
+                  child: user.avatarUrl == null
+                      ? const Icon(
+                          CupertinoIcons.person_fill,
+                          size: 40,
+                          color: Colors.white54,
+                        )
+                      : null,
+                ),
               ),
               const SizedBox(width: 24),
               Expanded(
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceAround,
                   children: [
-                    _buildStatItem('Postingan', '0'), // Placeholder for now
+                    // _buildStatItem('Postingan', '0'), // Removed placeholder
                     _buildStatItem('Pengikut', '${user.followersCount}'),
                     _buildStatItem('Mengikuti', '${user.followingCount}'),
                   ],
@@ -290,13 +439,23 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
           const SizedBox(height: 16),
           Text(
             user.username,
-            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+            style: GoogleFonts.outfit(
+              fontWeight: FontWeight.bold,
+              fontSize: 20,
+              color: Colors.white,
+            ),
           ),
           if (user.bio != null && user.bio!.isNotEmpty) ...[
-            const SizedBox(height: 4),
-            Text(user.bio!),
+            const SizedBox(height: 6),
+            Text(
+              user.bio!,
+              style: GoogleFonts.inter(
+                color: Colors.white.withValues(alpha: 0.8),
+                fontSize: 14,
+              ),
+            ),
           ],
-          const SizedBox(height: 16),
+          const SizedBox(height: 24),
           if (isMe)
             SizedBox(
               width: double.infinity,
@@ -305,14 +464,19 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                   context.push('/edit-profile', extra: user);
                 },
                 style: OutlinedButton.styleFrom(
-                  side: BorderSide(color: Colors.grey.shade700),
+                  side: BorderSide(color: Colors.white.withValues(alpha: 0.3)),
+                  backgroundColor: Colors.white.withValues(alpha: 0.05),
                   shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(8),
+                    borderRadius: BorderRadius.circular(12),
                   ),
+                  padding: const EdgeInsets.symmetric(vertical: 12),
                 ),
-                child: const Text(
+                child: Text(
                   'Edit Profil',
-                  style: TextStyle(color: Colors.white),
+                  style: GoogleFonts.outfit(
+                    color: Colors.white,
+                    fontWeight: FontWeight.w600,
+                  ),
                 ),
               ),
             )
@@ -328,63 +492,54 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                           : () => _toggleFollow(user.id, user.isFollowing),
                       style: ElevatedButton.styleFrom(
                         backgroundColor: user.isFollowing
-                            ? Colors.grey.shade800
+                            ? Colors.white.withValues(alpha: 0.1)
                             : Theme.of(context).colorScheme.primary,
                         foregroundColor: Colors.white,
+                        elevation: 0,
                         shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(8),
+                          borderRadius: BorderRadius.circular(12),
                         ),
+                        padding: const EdgeInsets.symmetric(vertical: 12),
                       ),
                       child: _isFollowingLoading
                           ? const SizedBox(
-                              width: 16,
-                              height: 16,
+                              width: 20,
+                              height: 20,
                               child: CircularProgressIndicator(
                                 strokeWidth: 2,
                                 color: Colors.white,
                               ),
                             )
-                          : Text(user.isFollowing ? 'Mengikuti' : 'Ikuti'),
+                          : Text(
+                              user.isFollowing ? 'Mengikuti' : 'Ikuti',
+                              style: GoogleFonts.outfit(
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
                     ),
                   ),
-                  const SizedBox(width: 8),
+                  const SizedBox(width: 12),
                   Expanded(
                     child: OutlinedButton(
                       onPressed: () async {
-                        // Create or get chat
-                        // We need a provider or repository access here
-                        // For now, let's just push to a route that handles creation or check
-                        // Or better, call createChat here.
-                        // But we don't have ref here easily without Consumer.
-                        // We are in a ConsumerState, so we have ref.
-
-                        // We need to import ChatRepository
-                        // Let's assume we will add the import
-                        // But wait, I can't add import with replace_file_content easily if it's far away.
-                        // I should use multi_replace to add import and button.
-
-                        // For now, let's just navigate to a "create chat" route or similar?
-                        // No, let's do it properly.
-
-                        // I'll use context.push('/chat/create?userId=${user.id}') or similar?
-                        // Or just push to chat room and let it handle creation?
-                        // The ChatRoomScreen takes chatId.
-                        // So we need to get chatId first.
-
-                        // Let's add a loading state for this button too?
-                        // Or just navigate to a generic /chat/user/:userId route that resolves the chat ID?
-                        // That seems cleaner for UI.
                         context.push('/chat/user/${user.id}', extra: user);
                       },
                       style: OutlinedButton.styleFrom(
-                        side: BorderSide(color: Colors.grey.shade700),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(8),
+                        side: BorderSide(
+                          color: Colors.white.withValues(alpha: 0.3),
                         ),
+                        backgroundColor: Colors.white.withValues(alpha: 0.05),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        padding: const EdgeInsets.symmetric(vertical: 12),
                       ),
-                      child: const Text(
+                      child: Text(
                         'Pesan',
-                        style: TextStyle(color: Colors.white),
+                        style: GoogleFonts.outfit(
+                          color: Colors.white,
+                          fontWeight: FontWeight.w600,
+                        ),
                       ),
                     ),
                   ),
@@ -401,9 +556,16 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
       children: [
         Text(
           value,
-          style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+          style: GoogleFonts.outfit(
+            fontWeight: FontWeight.bold,
+            fontSize: 18,
+            color: Colors.white,
+          ),
         ),
-        Text(label, style: const TextStyle(color: Colors.grey)),
+        Text(
+          label,
+          style: GoogleFonts.inter(color: Colors.white54, fontSize: 13),
+        ),
       ],
     );
   }
