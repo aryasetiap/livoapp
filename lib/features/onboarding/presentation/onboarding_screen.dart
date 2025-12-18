@@ -2,7 +2,9 @@ import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:go_router/go_router.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:smooth_page_indicator/smooth_page_indicator.dart';
+import '../../../core/config/theme.dart';
 
 class OnboardingScreen extends StatefulWidget {
   const OnboardingScreen({super.key});
@@ -48,43 +50,75 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.black,
       body: Stack(
         children: [
-          // Background Elements
-          Positioned(
-            top: -100,
-            right: -100,
-            child: ImageFiltered(
-              imageFilter: ui.ImageFilter.blur(sigmaX: 80, sigmaY: 80),
-              child: Container(
-                width: 300,
-                height: 300,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  color: Theme.of(
-                    context,
-                  ).colorScheme.primary.withValues(alpha: 0.2),
+          // 1. Background Gradient
+          Positioned.fill(
+            child: Container(
+              decoration: const BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                  colors: [
+                    AppTheme.backgroundColor,
+                    Color(0xFF1A1A2E), // Deep Dark Blue
+                    Color(0xFF2D1B4E), // Deep Purple
+                    Colors.black,
+                  ],
+                  stops: [0.0, 0.4, 0.7, 1.0],
                 ),
               ),
             ),
           ),
+
+          // 2. Ambient Orbs (Animated)
+          Positioned(
+            top: -100,
+            right: -100,
+            child:
+                ImageFiltered(
+                      imageFilter: ui.ImageFilter.blur(sigmaX: 80, sigmaY: 80),
+                      child: Container(
+                        width: 300,
+                        height: 300,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          color: Theme.of(
+                            context,
+                          ).colorScheme.primary.withValues(alpha: 0.3),
+                        ),
+                      ),
+                    )
+                    .animate(
+                      onPlay: (controller) => controller.repeat(reverse: true),
+                    )
+                    .scale(
+                      begin: const Offset(1, 1),
+                      end: const Offset(1.2, 1.2),
+                      duration: 5.seconds,
+                    ),
+          ),
           Positioned(
             bottom: -50,
             left: -50,
-            child: ImageFiltered(
-              imageFilter: ui.ImageFilter.blur(sigmaX: 60, sigmaY: 60),
-              child: Container(
-                width: 200,
-                height: 200,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  color: Theme.of(
-                    context,
-                  ).colorScheme.secondary.withValues(alpha: 0.15),
-                ),
-              ),
-            ),
+            child:
+                ImageFiltered(
+                      imageFilter: ui.ImageFilter.blur(sigmaX: 60, sigmaY: 60),
+                      child: Container(
+                        width: 200,
+                        height: 200,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          color: Theme.of(
+                            context,
+                          ).colorScheme.secondary.withValues(alpha: 0.2),
+                        ),
+                      ),
+                    )
+                    .animate(
+                      onPlay: (controller) => controller.repeat(reverse: true),
+                    )
+                    .moveY(begin: 0, end: 30, duration: 4.seconds),
           ),
 
           SafeArea(
@@ -94,13 +128,16 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                 Align(
                   alignment: Alignment.topRight,
                   child: Padding(
-                    padding: const EdgeInsets.only(right: 16, top: 8),
+                    padding: const EdgeInsets.only(right: 16, top: 16),
                     child: TextButton(
                       onPressed: () => context.go('/login'),
                       style: TextButton.styleFrom(
-                        foregroundColor: Colors.white60,
+                        foregroundColor: Colors.white70,
                       ),
-                      child: const Text('Lewati'),
+                      child: Text(
+                        'Lewati',
+                        style: GoogleFonts.inter(fontWeight: FontWeight.w600),
+                      ),
                     ),
                   ),
                 ),
@@ -137,9 +174,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                                                 return Icon(
                                                   item.fallbackIcon,
                                                   size: 150,
-                                                  color: Theme.of(
-                                                    context,
-                                                  ).colorScheme.primary,
+                                                  color: Colors.white,
                                                 );
                                               },
                                         )
@@ -170,22 +205,17 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                               padding: const EdgeInsets.symmetric(
                                 horizontal: 32,
                               ),
-                              decoration: const BoxDecoration(
-                                color: Colors.transparent,
-                              ),
                               child: Column(
                                 mainAxisAlignment: MainAxisAlignment.start,
                                 children: [
                                   Text(
                                         item.title,
-                                        style: Theme.of(context)
-                                            .textTheme
-                                            .headlineMedium
-                                            ?.copyWith(
-                                              fontWeight: FontWeight.w800,
-                                              color: Colors.white,
-                                              height: 1.2,
-                                            ),
+                                        style: GoogleFonts.outfit(
+                                          fontSize: 32,
+                                          fontWeight: FontWeight.bold,
+                                          color: Colors.white,
+                                          height: 1.2,
+                                        ),
                                         textAlign: TextAlign.center,
                                       )
                                       .animate()
@@ -199,14 +229,11 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                                   const SizedBox(height: 16),
                                   Text(
                                         item.description,
-                                        style: Theme.of(context)
-                                            .textTheme
-                                            .bodyLarge
-                                            ?.copyWith(
-                                              color: Colors.grey[400],
-                                              height: 1.5,
-                                              fontSize: 16,
-                                            ),
+                                        style: GoogleFonts.inter(
+                                          fontSize: 16,
+                                          color: Colors.grey[300],
+                                          height: 1.5,
+                                        ),
                                         textAlign: TextAlign.center,
                                       )
                                       .animate()
@@ -252,9 +279,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                           gradient: LinearGradient(
                             colors: [
                               Theme.of(context).colorScheme.primary,
-                              Theme.of(
-                                context,
-                              ).colorScheme.tertiary, // Fun gradient
+                              Theme.of(context).colorScheme.tertiary,
                             ],
                           ),
                           boxShadow: [
@@ -294,7 +319,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                             children: [
                               Text(
                                 _isLastPage ? 'Mulai' : 'Lanjut',
-                                style: const TextStyle(
+                                style: GoogleFonts.outfit(
                                   fontSize: 16,
                                   fontWeight: FontWeight.bold,
                                   color: Colors.white,
