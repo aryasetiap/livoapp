@@ -1,6 +1,7 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:lvoapp/features/feed/data/post_repository.dart';
@@ -21,6 +22,7 @@ class PostItem extends ConsumerStatefulWidget {
 class _PostItemState extends ConsumerState<PostItem> {
   late bool _isLiked;
   late int _likeCount;
+  bool _showHeartOverlay = false;
 
   @override
   void initState() {
@@ -144,24 +146,51 @@ class _PostItemState extends ConsumerState<PostItem> {
             ),
           ),
 
-          // Image
+          // Image with Double Tap to Like
           if (widget.post.imageUrl.isNotEmpty)
-            CachedNetworkImage(
-              imageUrl: widget.post.imageUrl,
-              width: double.infinity,
-              fit: BoxFit.cover,
-              placeholder: (context, url) => Container(
-                height: 400, // Taller image for modern look
-                color: Colors.grey.shade900,
-                child: const Center(child: CircularProgressIndicator()),
-              ),
-              errorWidget: (context, url, error) => Container(
-                height: 300,
-                color: Colors.grey.shade900,
-                child: const Icon(
-                  CupertinoIcons.exclamationmark_triangle,
-                  color: Colors.white54,
-                ),
+            GestureDetector(
+              onDoubleTap: () async {
+                if (!_isLiked) {
+                  _toggleLike();
+                }
+                setState(() {
+                  _showHeartOverlay = true;
+                });
+                await Future.delayed(const Duration(milliseconds: 500));
+                if (mounted) {
+                  setState(() {
+                    _showHeartOverlay = false;
+                  });
+                }
+              },
+              child: Stack(
+                alignment: Alignment.center,
+                children: [
+                  CachedNetworkImage(
+                    imageUrl: widget.post.imageUrl,
+                    width: double.infinity,
+                    fit: BoxFit.cover,
+                    placeholder: (context, url) => Container(
+                      height: 400,
+                      color: Colors.grey.shade900,
+                      child: const Center(child: CircularProgressIndicator()),
+                    ),
+                    errorWidget: (context, url, error) => Container(
+                      height: 300,
+                      color: Colors.grey.shade900,
+                      child: const Icon(
+                        CupertinoIcons.exclamationmark_triangle,
+                        color: Colors.white54,
+                      ),
+                    ),
+                  ),
+                  if (_showHeartOverlay)
+                    const Icon(
+                      CupertinoIcons.heart_fill,
+                      color: Colors.white,
+                      size: 80,
+                    ).animate().scale(duration: 400.ms).fadeOut(delay: 200.ms),
+                ],
               ),
             ),
 

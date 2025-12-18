@@ -265,71 +265,13 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                     const SizedBox(width: 8), // Add some spacing at the end
                   ],
                 ),
-                SliverToBoxAdapter(
-                  child: SizedBox(
-                    height: 110,
-                    child: ListView.builder(
-                      scrollDirection: Axis.horizontal,
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 16,
-                        vertical: 8,
-                      ),
-                      itemCount: 10,
-                      itemBuilder: (context, index) {
-                        return Padding(
-                          padding: const EdgeInsets.only(right: 16),
-                          child: Column(
-                            children: [
-                              Container(
-                                padding: const EdgeInsets.all(3),
-                                decoration: BoxDecoration(
-                                  shape: BoxShape.circle,
-                                  gradient: LinearGradient(
-                                    colors: [
-                                      Theme.of(context).colorScheme.primary,
-                                      Theme.of(context).colorScheme.secondary,
-                                    ],
-                                    begin: Alignment.topLeft,
-                                    end: Alignment.bottomRight,
-                                  ),
-                                ),
-                                child: CircleAvatar(
-                                  radius: 32,
-                                  backgroundColor: Colors.black,
-                                  child: ClipOval(
-                                    child: Image.network(
-                                      'https://i.pravatar.cc/150?u=story$index',
-                                      width: 60,
-                                      height: 60,
-                                      fit: BoxFit.cover,
-                                      errorBuilder:
-                                          (context, error, stackTrace) {
-                                            return Container(
-                                              width: 60,
-                                              height: 60,
-                                              color: Colors.grey[800],
-                                              child: const Icon(
-                                                Icons.person_off,
-                                                color: Colors.white54,
-                                              ),
-                                            );
-                                          },
-                                    ),
-                                  ),
-                                ),
-                              ),
-                              const SizedBox(height: 4),
-                              Text(
-                                'User $index',
-                                style: const TextStyle(fontSize: 12),
-                              ),
-                            ],
-                          ),
-                        );
-                      },
-                    ),
-                  ),
-                ),
+                // Stories section hidden for now as per user request
+                // SliverToBoxAdapter(
+                //   child: SizedBox(
+                //     height: 110,
+                //     ...
+                //   ),
+                // ),
                 SliverToBoxAdapter(
                   child: Padding(
                     padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
