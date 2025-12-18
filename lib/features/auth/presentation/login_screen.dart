@@ -117,6 +117,21 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                       : const Text('Masuk Sekarang'),
                 ),
                 const SizedBox(height: 16),
+                OutlinedButton.icon(
+                  onPressed: state.isLoading
+                      ? null
+                      : () {
+                          ref
+                              .read(authControllerProvider.notifier)
+                              .signInWithGoogle();
+                        },
+                  icon: const Icon(Icons.g_mobiledata, size: 24),
+                  label: const Text('Masuk dengan Google'),
+                  style: OutlinedButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(vertical: 12),
+                  ),
+                ),
+                const SizedBox(height: 16),
                 TextButton(
                   onPressed: () => context.go('/signup'),
                   child: const Text('Belum punya akun? Daftar dulu yuk'),

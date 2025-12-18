@@ -123,6 +123,21 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
                       : const Text('Daftar Sekarang'),
                 ),
                 const SizedBox(height: 16),
+                OutlinedButton.icon(
+                  onPressed: state.isLoading
+                      ? null
+                      : () {
+                          ref
+                              .read(authControllerProvider.notifier)
+                              .signInWithGoogle();
+                        },
+                  icon: const Icon(Icons.g_mobiledata, size: 24),
+                  label: const Text('Daftar dengan Google'),
+                  style: OutlinedButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(vertical: 12),
+                  ),
+                ),
+                const SizedBox(height: 16),
                 TextButton(
                   onPressed: () => context.go('/login'),
                   child: const Text('Sudah punya akun? Masuk di sini'),

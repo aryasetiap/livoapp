@@ -48,6 +48,19 @@ class AuthController extends StateNotifier<AsyncValue<void>> {
     });
   }
 
+  Future<void> signInWithGoogle() async {
+    state = const AsyncValue.loading();
+    state = await AsyncValue.guard(() async {
+      final result = await _authRepository.signInWithGoogle();
+
+      // Save FCM token after successful sign in
+      if (result.user != null) {
+        await _authRepository.saveFcmToken();
+        await _authRepository.setupFcmListeners();
+      }
+    });
+  }
+
   Future<void> signOut() async {
     state = const AsyncValue.loading();
     state = await AsyncValue.guard(() => _authRepository.signOut());

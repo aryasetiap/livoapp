@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lvoapp/features/auth/domain/user_model.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:lvoapp/features/notifications/data/notification_repository.dart';
+import 'package:google_sign_in/google_sign_in.dart';
 
 final authRepositoryProvider = Provider<AuthRepository>((ref) {
   return AuthRepository(
@@ -39,6 +40,36 @@ class AuthRepository {
       email: email,
       password: password,
       data: {'username': username},
+    );
+  }
+
+  Future<AuthResponse> signInWithGoogle() async {
+    const webClientId =
+        '234253323510-j6qrjvbh8i787c5v5r9spb9r78k175hc.apps.googleusercontent.com';
+
+    final GoogleSignIn googleSignIn = GoogleSignIn(serverClientId: webClientId);
+
+    final GoogleSignInAccount? googleUser = await googleSignIn.signIn();
+    if (googleUser == null) {
+      throw 'Google Sign In canceled';
+    }
+
+    final GoogleSignInAuthentication googleAuth =
+        await googleUser.authentication;
+    final accessToken = googleAuth.accessToken;
+    final idToken = googleAuth.idToken;
+
+    if (accessToken == null) {
+      throw 'No Access Token found.';
+    }
+    if (idToken == null) {
+      throw 'No ID Token found.';
+    }
+
+    return _auth.signInWithIdToken(
+      provider: OAuthProvider.google,
+      idToken: idToken,
+      accessToken: accessToken,
     );
   }
 
