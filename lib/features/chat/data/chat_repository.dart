@@ -107,16 +107,16 @@ class ChatRepository {
             }),
           );
         } catch (e) {
-          // print('Error processing chat item: $e');
+          // debugPrint('Error processing chat item: $e');
         }
       }
 
       // Sort by updated_at or last message time
       chats.sort((a, b) => b.updatedAt.compareTo(a.updatedAt));
-
+      // debugPrint('getChats: returning ${chats.length} chats');
       return chats;
     } catch (e) {
-      // print('Error fetching chats: $e');
+      // debugPrint('Error fetching chats: $e');
       return [];
     }
   }

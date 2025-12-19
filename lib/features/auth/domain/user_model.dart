@@ -14,7 +14,7 @@ class UserModel {
   @JsonKey(name: 'avatar_url')
   final String? avatarUrl;
   @JsonKey(name: 'created_at')
-  final DateTime createdAt;
+  final DateTime? createdAt;
   @JsonKey(name: 'followers_count')
   final int followersCount;
   @JsonKey(name: 'following_count')
@@ -25,11 +25,11 @@ class UserModel {
     required this.id,
     required this.username,
     this.fullName,
-    this.email, // Optional
+    this.email,
     this.bio,
     this.website,
     this.avatarUrl,
-    required this.createdAt,
+    this.createdAt,
     this.followersCount = 0,
     this.followingCount = 0,
     this.isFollowing = false,

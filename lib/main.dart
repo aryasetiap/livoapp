@@ -23,6 +23,7 @@ import 'features/search/presentation/search_screen.dart';
 import 'features/auth/domain/user_model.dart';
 import 'features/chat/presentation/chat_list_screen.dart';
 import 'features/chat/presentation/chat_room_screen.dart';
+import 'features/chat/presentation/new_chat_screen.dart';
 import 'features/chat/data/chat_repository.dart';
 import 'features/notifications/presentation/notifications_screen.dart';
 import 'core/router/auth_notifier.dart';
@@ -235,6 +236,10 @@ final routerProvider = Provider<GoRouter>((ref) {
           final otherUser = state.extra as UserModel;
           return ChatResolverScreen(otherUserId: userId, otherUser: otherUser);
         },
+      ),
+      GoRoute(
+        path: '/new-chat',
+        builder: (context, state) => const NewChatScreen(),
       ),
     ],
   );

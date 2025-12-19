@@ -44,20 +44,17 @@ class ChatListScreen extends ConsumerWidget {
         ),
         centerTitle: true,
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          // For now, show a snackbar or simple dialog since we don't have a specific "Select User" screen ready in the context provided.
-          // Ideally: context.push('/new-chat');
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('Fitur "Chat Baru" akan segera hadir!'),
-            ),
-          );
-        },
-        backgroundColor: Theme.of(context).colorScheme.primary,
-        child: const Icon(
-          CupertinoIcons.chat_bubble_text_fill,
-          color: Colors.white,
+      floatingActionButton: Padding(
+        padding: const EdgeInsets.only(bottom: 110),
+        child: FloatingActionButton(
+          onPressed: () {
+            context.push('/new-chat');
+          },
+          backgroundColor: Theme.of(context).colorScheme.primary,
+          child: const Icon(
+            CupertinoIcons.chat_bubble_text_fill,
+            color: Colors.white,
+          ),
         ),
       ),
       body: Stack(

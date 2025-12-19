@@ -14,7 +14,9 @@ UserModel _$UserModelFromJson(Map<String, dynamic> json) => UserModel(
   bio: json['bio'] as String?,
   website: json['website'] as String?,
   avatarUrl: json['avatar_url'] as String?,
-  createdAt: DateTime.parse(json['created_at'] as String),
+  createdAt: json['created_at'] == null
+      ? null
+      : DateTime.parse(json['created_at'] as String),
   followersCount: (json['followers_count'] as num?)?.toInt() ?? 0,
   followingCount: (json['following_count'] as num?)?.toInt() ?? 0,
   isFollowing: json['isFollowing'] as bool? ?? false,
@@ -28,7 +30,7 @@ Map<String, dynamic> _$UserModelToJson(UserModel instance) => <String, dynamic>{
   'bio': instance.bio,
   'website': instance.website,
   'avatar_url': instance.avatarUrl,
-  'created_at': instance.createdAt.toIso8601String(),
+  'created_at': instance.createdAt?.toIso8601String(),
   'followers_count': instance.followersCount,
   'following_count': instance.followingCount,
   'isFollowing': instance.isFollowing,
