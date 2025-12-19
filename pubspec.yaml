@@ -51,6 +51,6 @@ flutter:
 flutter_launcher_icons:
   android: "launcher_icon"
   ios: false
-  image_path: "lvo.jpg"
-  adaptive_icon_background: "#FFFFFF"
-  adaptive_icon_foreground: "lvo.jpg"
+  image_path: "lvo.png"
+  adaptive_icon_background: "#000815"
+  adaptive_icon_foreground: "lvo.png"
