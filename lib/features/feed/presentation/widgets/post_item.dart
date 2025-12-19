@@ -1,4 +1,5 @@
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:share_plus/share_plus.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
@@ -38,6 +39,14 @@ class _PostItemState extends ConsumerState<PostItem> {
       _isLiked = widget.post.isLiked;
       _likeCount = widget.post.likeCount;
     }
+  }
+
+  Future<void> _sharePost() async {
+    final postUrl = 'https://lvoapp.com/post/${widget.post.id}';
+    final text =
+        'Lihat postingan ${widget.post.username} di LVO:\n\n${widget.post.caption ?? ''}\n\n$postUrl';
+
+    await Share.share(text);
   }
 
   Future<void> _toggleLike() async {
@@ -240,7 +249,7 @@ class _PostItemState extends ConsumerState<PostItem> {
                   ),
                 ),
                 IconButton(
-                  onPressed: () {},
+                  onPressed: _sharePost,
                   icon: const Icon(
                     CupertinoIcons.paperplane,
                     color: Colors.white,

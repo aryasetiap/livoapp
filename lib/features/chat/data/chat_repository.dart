@@ -159,10 +159,15 @@ class ChatRepository {
       });
 
       // Update chat updated_at
-      await _supabase
-          .from('chats')
-          .update({'updated_at': DateTime.now().toIso8601String()})
-          .eq('id', chatId);
+      // Temporarily wrapped in try-catch to prevent blocking message send
+      try {
+        await _supabase
+            .from('chats')
+            .update({'updated_at': DateTime.now().toIso8601String()})
+            .eq('id', chatId);
+      } catch (e) {
+        // print('Error updating chat timestamp: $e');
+      }
     } catch (e) {
       // print('Error sending message: $e');
       rethrow;

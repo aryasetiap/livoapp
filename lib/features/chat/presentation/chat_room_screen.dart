@@ -11,6 +11,7 @@ import 'package:lvoapp/features/chat/domain/message_model.dart';
 import 'package:lvoapp/features/auth/domain/user_model.dart';
 import 'package:lvoapp/features/auth/data/auth_repository.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 final chatMessagesProvider = StreamProvider.family<List<MessageModel>, String>((
   ref,
@@ -21,13 +22,9 @@ final chatMessagesProvider = StreamProvider.family<List<MessageModel>, String>((
 
 class ChatRoomScreen extends ConsumerStatefulWidget {
   final String chatId;
-  final UserModel otherUser;
+  final UserModel? otherUser;
 
-  const ChatRoomScreen({
-    super.key,
-    required this.chatId,
-    required this.otherUser,
-  });
+  const ChatRoomScreen({super.key, required this.chatId, this.otherUser});
 
   @override
   ConsumerState<ChatRoomScreen> createState() => _ChatRoomScreenState();
@@ -36,14 +33,62 @@ class ChatRoomScreen extends ConsumerStatefulWidget {
 class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
   final _messageController = TextEditingController();
   final ScrollController _scrollController = ScrollController();
+  UserModel? _otherUser;
+  bool _isLoadingUser = false;
 
   @override
   void initState() {
     super.initState();
+    _otherUser = widget.otherUser;
+
     // Mark messages as read when entering the screen
     WidgetsBinding.instance.addPostFrameCallback((_) {
       ref.read(chatRepositoryProvider).markMessagesAsRead(widget.chatId);
+      if (_otherUser == null) {
+        _loadOtherUser();
+      }
     });
+  }
+
+  Future<void> _loadOtherUser() async {
+    setState(() => _isLoadingUser = true);
+    try {
+      final currentUserId = ref.read(authRepositoryProvider).currentUser?.id;
+      if (currentUserId == null) return;
+
+      final supabase = Supabase.instance.client;
+
+      // 1. Fetch participant user_id directly without join
+      final participantResponse = await supabase
+          .from('chat_participants')
+          .select('user_id')
+          .eq('chat_id', widget.chatId)
+          .neq('user_id', currentUserId)
+          .maybeSingle();
+
+      if (participantResponse == null) return;
+
+      final otherUserId = participantResponse['user_id'] as String;
+
+      // 2. Fetch profile directly
+      final profileResponse = await supabase
+          .from('profiles')
+          .select()
+          .eq('id', otherUserId)
+          .maybeSingle();
+
+      if (profileResponse != null) {
+        if (mounted) {
+          setState(() {
+            _otherUser = UserModel.fromJson(profileResponse);
+          });
+        }
+      }
+    } catch (e) {
+      debugPrint('Error loading user: $e');
+    } finally {
+      if (mounted) setState(() => _isLoadingUser = false);
+    }
   }
 
   @override
@@ -60,7 +105,6 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
     ref.read(chatRepositoryProvider).sendMessage(widget.chatId, content);
     _messageController.clear();
 
-    // Scroll to bottom
     if (_scrollController.hasClients) {
       _scrollController.animateTo(
         _scrollController.position.maxScrollExtent,
@@ -97,6 +141,20 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
 
   @override
   Widget build(BuildContext context) {
+    if (_isLoadingUser) {
+      return const Scaffold(body: Center(child: CircularProgressIndicator()));
+    }
+
+    // Fallback if user loading failed
+    final user =
+        _otherUser ??
+        UserModel(
+          id: 'unknown',
+          email: '',
+          username: 'Unknown User',
+          createdAt: DateTime.now(),
+        );
+
     final messagesState = ref.watch(chatMessagesProvider(widget.chatId));
     final currentUserId = ref.watch(authRepositoryProvider).currentUser?.id;
 
@@ -120,10 +178,10 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
             CircleAvatar(
               radius: 18,
               backgroundColor: Colors.grey.shade900,
-              backgroundImage: widget.otherUser.avatarUrl != null
-                  ? CachedNetworkImageProvider(widget.otherUser.avatarUrl!)
+              backgroundImage: user.avatarUrl != null
+                  ? CachedNetworkImageProvider(user.avatarUrl!)
                   : null,
-              child: widget.otherUser.avatarUrl == null
+              child: user.avatarUrl == null
                   ? const Icon(
                       CupertinoIcons.person_fill,
                       size: 18,
@@ -133,7 +191,7 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
             ),
             const SizedBox(width: 12),
             Text(
-              widget.otherUser.username,
+              user.username,
               style: GoogleFonts.outfit(
                 fontSize: 18,
                 fontWeight: FontWeight.bold,
@@ -172,7 +230,7 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
                       if (messages.isEmpty) {
                         return Center(
                           child: Text(
-                            'Mulai percakapan dengan ${widget.otherUser.username}',
+                            'Mulai percakapan dengan ${user.username}',
                             style: GoogleFonts.inter(color: Colors.white30),
                           ),
                         ).animate().fadeIn();

@@ -25,6 +25,7 @@ import 'features/chat/presentation/chat_list_screen.dart';
 import 'features/chat/presentation/chat_room_screen.dart';
 import 'features/chat/data/chat_repository.dart';
 import 'features/notifications/presentation/notifications_screen.dart';
+import 'core/router/auth_notifier.dart';
 
 import 'package:timeago/timeago.dart' as timeago;
 
@@ -84,9 +85,40 @@ Future<void> main() async {
 final routerProvider = Provider<GoRouter>((ref) {
   final rootNavigatorKey = GlobalKey<NavigatorState>();
 
+  final authNotifier = ref.watch(authNotifierProvider);
+
   return GoRouter(
     navigatorKey: rootNavigatorKey,
     initialLocation: '/',
+    refreshListenable: authNotifier,
+    redirect: (context, state) {
+      final isAuthenticated = authNotifier.isAuthenticated;
+      final isGoingToLogin = state.matchedLocation == '/login';
+      final isGoingToSignup = state.matchedLocation == '/signup';
+      final isGoingToOnboarding = state.matchedLocation == '/onboarding';
+      final isStartingUp = state.matchedLocation == '/';
+      final isGoingToReset =
+          state.matchedLocation == '/forgot-password' ||
+          state.matchedLocation == '/update-password';
+
+      // If not authenticated and not going to public pages, redirect to login
+      if (!isAuthenticated &&
+          !isGoingToLogin &&
+          !isGoingToSignup &&
+          !isGoingToOnboarding &&
+          !isStartingUp &&
+          !isGoingToReset) {
+        return '/login'; // Or /onboarding if you prefer
+      }
+
+      // If authenticated and trying to access login/signup/onboarding, redirect to home
+      if (isAuthenticated &&
+          (isGoingToLogin || isGoingToSignup || isGoingToOnboarding)) {
+        return '/home';
+      }
+
+      return null;
+    },
     routes: [
       GoRoute(path: '/', builder: (context, state) => const SplashScreen()),
       GoRoute(
@@ -164,8 +196,9 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/post/:id',
         builder: (context, state) {
-          final post = state.extra as PostModel;
-          return PostDetailScreen(post: post);
+          final post = state.extra as PostModel?; // Changed to nullable
+          final postId = state.pathParameters['id']!;
+          return PostDetailScreen(post: post, postId: postId); // Pass postId
         },
       ),
       GoRoute(
@@ -191,7 +224,7 @@ final routerProvider = Provider<GoRouter>((ref) {
         path: '/chat/:id',
         builder: (context, state) {
           final chatId = state.pathParameters['id']!;
-          final otherUser = state.extra as UserModel;
+          final otherUser = state.extra as UserModel?; // Nullable just in case
           return ChatRoomScreen(chatId: chatId, otherUser: otherUser);
         },
       ),
