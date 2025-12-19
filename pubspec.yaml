@@ -45,7 +45,7 @@ flutter:
   assets:
     - lib/core/config/.env
     - assets/images/
-    - lvo.jpg
+    - lvo.png
 
 # Flutter Launcher Icons configuration
 flutter_launcher_icons:
