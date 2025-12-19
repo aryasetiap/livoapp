@@ -28,7 +28,20 @@ class AuthRepository {
     required String email,
     required String password,
   }) async {
-    return await _auth.signInWithPassword(email: email, password: password);
+    final response = await _auth.signInWithPassword(
+      email: email,
+      password: password,
+    );
+
+    // Strict Check: Is email confirmed?
+    final user = response.user;
+    if (user != null && user.emailConfirmedAt == null) {
+      // If unverified, force sign out immediately to prevent access
+      await _auth.signOut();
+      throw 'Email belum diverifikasi. Silakan cek inbox/spam email Anda untuk link verifikasi.';
+    }
+
+    return response;
   }
 
   Future<AuthResponse> signUpWithEmailAndPassword({
@@ -36,11 +49,18 @@ class AuthRepository {
     required String password,
     required String username,
   }) async {
-    return await _auth.signUp(
+    final response = await _auth.signUp(
       email: email,
       password: password,
       data: {'username': username},
+      emailRedirectTo: 'io.supabase.lvoapp://verified',
     );
+
+    // Previously we forced signOut() here, but that DELETES the PKCE verifier code,
+    // causing "AuthException: Code verifier could not be found" when clicking the email link.
+    // We now rely on Router logic to prevent access if unverified.
+
+    return response;
   }
 
   static const _webClientId =
@@ -68,11 +88,60 @@ class AuthRepository {
       throw 'No ID Token found.';
     }
 
-    return _auth.signInWithIdToken(
+    final response = await _auth.signInWithIdToken(
       provider: OAuthProvider.google,
       idToken: idToken,
       accessToken: accessToken,
     );
+
+    // Ensure profile is created immediately after Google Login
+    if (response.user != null) {
+      await ensureProfileExists();
+    }
+
+    return response;
+  }
+
+  /// Ensures a profile exists for the current user.
+  /// Creates one using metadata if missing.
+  Future<void> ensureProfileExists() async {
+    final user = _auth.currentUser;
+    if (user == null) return;
+
+    try {
+      // Check if profile exists using maybeSingle to avoid exception
+      final data = await _supabase
+          .from('profiles')
+          .select('id')
+          .eq('id', user.id)
+          .maybeSingle();
+
+      if (data == null) {
+        // Create profile from user metadata
+        final metadata = user.userMetadata;
+        final name =
+            metadata?['full_name'] ??
+            metadata?['name'] ??
+            user.email?.split('@')[0] ??
+            'User';
+        final username =
+            metadata?['preferred_username'] ??
+            name.toString().replaceAll(' ', '').toLowerCase();
+        // final avatarUrl = metadata?['avatar_url'] ?? metadata?['picture']; // Optional
+
+        debugPrint('Creating profile for ${user.id}...');
+        await _supabase.from('profiles').insert({
+          'id': user.id,
+          // 'email': user.email, // Column does not exist in DB
+          'username': username,
+          'full_name': name,
+          // 'avatar_url': avatarUrl,
+        });
+      }
+    } catch (e) {
+      debugPrint('Error ensuring profile exists: $e');
+      // Don't rethrow, strictly existing is "best effort"
+    }
   }
 
   Future<void> signOut() async {
@@ -141,7 +210,43 @@ class AuthRepository {
           '*, followers:followers!following_id(count), following:followers!follower_id(count)',
         )
         .eq('id', userId)
-        .single();
+        .maybeSingle(); // Changed from single() to maybeSingle() to handle missing rows
+
+    if (response == null) {
+      // Self-Healing: If profile is missing for CURRENT USER, create it.
+      final currentUser = _auth.currentUser;
+      if (currentUser != null && currentUser.id == userId) {
+        final username =
+            currentUser.userMetadata?['username'] ??
+            currentUser.email?.split('@')[0] ??
+            'User';
+
+        // Insert new profile
+        // Note: Removed 'created_at' as it might not affect all profile tables or RLS might block it.
+        // Supabase should handle this or we rely on 'updated_at' if available.
+        final newProfile = {
+          'id': userId,
+          'username': username,
+          'full_name': username,
+        };
+
+        try {
+          await _supabase.from('profiles').insert(newProfile);
+        } catch (e) {
+          debugPrint('Failed to auto-create profile: $e');
+        }
+
+        // Return constructed model
+        return UserModel.fromJson({
+          ...newProfile,
+          'followers_count': 0,
+          'following_count': 0,
+          'isFollowing': false,
+        });
+      }
+
+      throw 'User profile not found';
+    }
 
     // Check if current user is following this user
     bool isFollowing = false;

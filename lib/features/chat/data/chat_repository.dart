@@ -179,6 +179,10 @@ class ChatRepository {
     final currentUserId = _supabase.auth.currentUser?.id;
     if (currentUserId == null) throw Exception('Not authenticated');
 
+    // Self-Healing: Ensure current user has a profile before participating in chat
+    // This prevents foreign key violation if profile trigger failed
+    await _ensureProfileExists(currentUserId);
+
     // Check for existing chat using robust direct query
     final existingChatId = await _findExistingChatId(
       currentUserId,
@@ -298,5 +302,36 @@ class ChatRepository {
               .whereType<MessageModel>()
               .toList();
         });
+  }
+
+  Future<void> _ensureProfileExists(String userId) async {
+    try {
+      final exists = await _supabase
+          .from('profiles')
+          .select('id')
+          .eq('id', userId)
+          .maybeSingle();
+
+      if (exists == null) {
+        debugPrint('createChat: Profile missing for $userId, auto-creating...');
+        final currentUser = _supabase.auth.currentUser;
+        if (currentUser != null && currentUser.id == userId) {
+          final username =
+              currentUser.userMetadata?['username'] ??
+              currentUser.email?.split('@')[0] ??
+              'User';
+
+          await _supabase.from('profiles').insert({
+            'id': userId,
+            'username': username,
+            'full_name': username,
+            // 'email': currentUser.email, // Removed: No email column
+            // 'created_at': DateTime.now().toIso8601String(), // Optional
+          });
+        }
+      }
+    } catch (e) {
+      debugPrint('Error ensuring profile exists: $e');
+    }
   }
 }

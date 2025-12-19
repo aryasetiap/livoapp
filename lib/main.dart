@@ -11,6 +11,7 @@ import 'features/auth/presentation/signup_screen.dart';
 import 'features/auth/presentation/splash_screen.dart';
 import 'features/auth/presentation/forgot_password_screen.dart';
 import 'features/auth/presentation/update_password_screen.dart';
+import 'features/auth/presentation/verified_success_screen.dart';
 import 'features/feed/presentation/home_screen.dart';
 import 'features/feed/presentation/create_post_screen.dart';
 import 'features/onboarding/presentation/onboarding_screen.dart';
@@ -101,6 +102,7 @@ final routerProvider = Provider<GoRouter>((ref) {
       final isGoingToReset =
           state.matchedLocation == '/forgot-password' ||
           state.matchedLocation == '/update-password';
+      final isGoingToVerified = state.matchedLocation == '/verified';
 
       // If not authenticated and not going to public pages, redirect to login
       if (!isAuthenticated &&
@@ -108,14 +110,34 @@ final routerProvider = Provider<GoRouter>((ref) {
           !isGoingToSignup &&
           !isGoingToOnboarding &&
           !isStartingUp &&
-          !isGoingToReset) {
+          !isGoingToReset &&
+          !isGoingToVerified) {
         return '/login'; // Or /onboarding if you prefer
       }
 
-      // If authenticated and trying to access login/signup/onboarding, redirect to home
-      if (isAuthenticated &&
-          (isGoingToLogin || isGoingToSignup || isGoingToOnboarding)) {
-        return '/home';
+      // If authenticated...
+      if (isAuthenticated) {
+        // Strict Verification Check:
+        // Only allow access to protected routes if email is CONFIRMED.
+        final currentUser = authNotifier.currentUser;
+        final isVerified = currentUser?.emailConfirmedAt != null;
+
+        // If trying to access login/signup/onboarding, redirect to home only if verified.
+        if (isGoingToLogin || isGoingToSignup || isGoingToOnboarding) {
+          return isVerified ? '/home' : null;
+        }
+
+        // If accessing protected routes (like /home) but NOT verified, redirect to login.
+        // This handles the case where session exists but verification is pending.
+        if (!isVerified && !isGoingToLogin && !isGoingToReset) {
+          // allow them to stay on signup to see the dialog, or go to login.
+          // If they are on signup, let them be.
+          if (isGoingToSignup) return null;
+          // If they are on verified screen, let them be (Supabase auth state might be active)
+          if (isGoingToVerified) return null;
+
+          return '/login';
+        }
       }
 
       return null;
@@ -138,6 +160,10 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/update-password',
         builder: (context, state) => const UpdatePasswordScreen(),
+      ),
+      GoRoute(
+        path: '/verified',
+        builder: (context, state) => const VerifiedSuccessScreen(),
       ),
       StatefulShellRoute.indexedStack(
         builder: (context, state, navigationShell) {

@@ -15,4 +15,6 @@ class AuthNotifier extends ChangeNotifier {
 
   bool get isAuthenticated =>
       Supabase.instance.client.auth.currentSession != null;
+
+  User? get currentUser => Supabase.instance.client.auth.currentUser;
 }
