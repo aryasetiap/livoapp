@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lvoapp/features/chat/domain/chat_model.dart';
 import 'package:lvoapp/features/chat/domain/message_model.dart';
 import 'package:lvoapp/features/auth/domain/user_model.dart';
+import 'package:flutter/foundation.dart'; // For debugPrint
 
 final chatRepositoryProvider = Provider<ChatRepository>((ref) {
   return ChatRepository(Supabase.instance.client);
@@ -178,25 +179,22 @@ class ChatRepository {
     final currentUserId = _supabase.auth.currentUser?.id;
     if (currentUserId == null) throw Exception('Not authenticated');
 
-    // Check if chat already exists
-    // Simplified check:
-    final myChats = await getChats();
-    for (var chat in myChats) {
-      final participantIds = chat.participants?.map((u) => u.id).toSet();
-      if (participantIds != null &&
-          participantIds.contains(currentUserId) &&
-          participantIds.contains(otherUserId) &&
-          participantIds.length == 2) {
-        return chat.id;
-      }
+    // Check for existing chat using robust direct query
+    final existingChatId = await _findExistingChatId(
+      currentUserId,
+      otherUserId,
+    );
+    if (existingChatId != null) {
+      debugPrint('Found existing chat: $existingChatId');
+      return existingChatId;
     }
+
+    debugPrint('Creating new chat with $otherUserId');
 
     // Create new chat
     final chatResponse = await _supabase
         .from('chats')
-        .insert({
-          'created_by': currentUserId,
-        }) // ID and timestamps auto-generated
+        .insert({'created_by': currentUserId})
         .select()
         .single();
 
@@ -209,6 +207,40 @@ class ChatRepository {
     ]);
 
     return chatId;
+  }
+
+  Future<String?> _findExistingChatId(
+    String myUserId,
+    String otherUserId,
+  ) async {
+    try {
+      // 1. Get all chat_ids where I am a participant
+      final myChatsRes = await _supabase
+          .from('chat_participants')
+          .select('chat_id')
+          .eq('user_id', myUserId);
+
+      final myChatIds = (myChatsRes as List)
+          .map((e) => e['chat_id'] as String)
+          .toList();
+
+      if (myChatIds.isEmpty) return null;
+
+      // 2. Check if otherUserId is in any of these chats
+      final commonRes = await _supabase
+          .from('chat_participants')
+          .select('chat_id')
+          .eq('user_id', otherUserId)
+          .filter('chat_id', 'in', myChatIds)
+          .maybeSingle();
+
+      if (commonRes != null) {
+        return commonRes['chat_id'] as String;
+      }
+    } catch (e) {
+      debugPrint('Error finding existing chat: $e');
+    }
+    return null;
   }
 
   Future<void> markMessagesAsRead(String chatId) async {
@@ -250,6 +282,21 @@ class ChatRepository {
         .stream(primaryKey: ['id'])
         .eq('chat_id', chatId)
         .order('created_at', ascending: false)
-        .map((maps) => maps.map((map) => MessageModel.fromJson(map)).toList());
+        .map((maps) {
+          debugPrint(
+            'Stream received ${maps.length} raw messages for chat $chatId',
+          );
+          return maps
+              .map((map) {
+                try {
+                  return MessageModel.fromJson(map);
+                } catch (e) {
+                  debugPrint('Error parsing message: $e, map: $map');
+                  return null;
+                }
+              })
+              .whereType<MessageModel>()
+              .toList();
+        });
   }
 }

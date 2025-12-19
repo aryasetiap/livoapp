@@ -98,19 +98,31 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
     super.dispose();
   }
 
-  void _sendMessage() {
+  Future<void> _sendMessage() async {
     final content = _messageController.text.trim();
     if (content.isEmpty) return;
 
-    ref.read(chatRepositoryProvider).sendMessage(widget.chatId, content);
-    _messageController.clear();
+    _messageController.clear(); // Clear immediately for UX
 
-    if (_scrollController.hasClients) {
-      _scrollController.animateTo(
-        _scrollController.position.maxScrollExtent,
-        duration: const Duration(milliseconds: 300),
-        curve: Curves.easeOut,
-      );
+    try {
+      await ref
+          .read(chatRepositoryProvider)
+          .sendMessage(widget.chatId, content);
+
+      if (_scrollController.hasClients) {
+        _scrollController.animateTo(
+          _scrollController.position.maxScrollExtent,
+          duration: const Duration(milliseconds: 300),
+          curve: Curves.easeOut,
+        );
+      }
+    } catch (e) {
+      debugPrint('Validation error: $e');
+      if (mounted) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Gagal mengirim pesan: $e')));
+      }
     }
   }
 
@@ -227,6 +239,9 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
                 Expanded(
                   child: messagesState.when(
                     data: (messages) {
+                      debugPrint(
+                        'UI: Loaded ${messages.length} messages for Chat ${widget.chatId}',
+                      );
                       if (messages.isEmpty) {
                         return Center(
                           child: Text(
