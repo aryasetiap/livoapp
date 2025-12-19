@@ -25,6 +25,7 @@ import 'features/auth/domain/user_model.dart';
 import 'features/chat/presentation/chat_list_screen.dart';
 import 'features/chat/presentation/chat_room_screen.dart';
 import 'features/chat/presentation/new_chat_screen.dart';
+import 'features/auth/data/auth_repository.dart';
 import 'features/chat/data/chat_repository.dart';
 import 'features/notifications/presentation/notifications_screen.dart';
 import 'core/router/auth_notifier.dart';
@@ -286,10 +287,21 @@ class _LvoAppState extends ConsumerState<LvoApp> {
   }
 
   void _setupAuthListener() {
-    Supabase.instance.client.auth.onAuthStateChange.listen((data) {
+    Supabase.instance.client.auth.onAuthStateChange.listen((data) async {
       final event = data.event;
+      final session = data.session;
+
       if (event == AuthChangeEvent.passwordRecovery) {
         ref.read(routerProvider).go('/update-password');
+      } else if (event == AuthChangeEvent.signedIn ||
+          event == AuthChangeEvent.tokenRefreshed ||
+          (event == AuthChangeEvent.initialSession && session != null)) {
+        // Ensure profile and FCM token are set up whenever we have a valid session
+        debugPrint('Auth event: $event - Ensuring profile & FCM...');
+        final authRepo = ref.read(authRepositoryProvider);
+        await authRepo.ensureProfileExists();
+        await authRepo.saveFcmToken();
+        await authRepo.setupFcmListeners();
       }
     });
   }

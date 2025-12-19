@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lvoapp/features/chat/domain/chat_model.dart';
@@ -119,6 +120,84 @@ class ChatRepository {
       // debugPrint('Error fetching chats: $e');
       return [];
     }
+  }
+
+  /// Returns a stream of chat lists that updates in real-time.
+  Stream<List<ChatModel>> getChatsStream() {
+    final userId = _supabase.auth.currentUser?.id;
+    if (userId == null) return Stream.value([]);
+
+    // Create a stream controller to manage the data
+    late final StreamController<List<ChatModel>> controller;
+
+    // Subscription channels
+    RealtimeChannel? participantsChannel;
+    RealtimeChannel? messagesChannel;
+
+    void fetchAndEmit() async {
+      try {
+        final chats = await getChats();
+        if (!controller.isClosed) {
+          controller.add(chats);
+        }
+      } catch (e) {
+        // debugPrint('Error refreshing chats: $e');
+      }
+    }
+
+    controller = StreamController<List<ChatModel>>(
+      onListen: () {
+        // 1. Initial Fetch
+        fetchAndEmit();
+
+        // 2. Listen for new chats (where I am added as participant)
+        participantsChannel = _supabase.channel(
+          'public:chat_participants:$userId',
+        );
+        participantsChannel!
+            .onPostgresChanges(
+              event: PostgresChangeEvent.insert,
+              schema: 'public',
+              table: 'chat_participants',
+              filter: PostgresChangeFilter(
+                type: PostgresChangeFilterType.eq,
+                column: 'user_id',
+                value: userId,
+              ),
+              callback: (payload) {
+                // debugPrint('New chat detected, refreshing...');
+                fetchAndEmit();
+              },
+            )
+            .subscribe();
+
+        // 3. Listen for new messages (in chats I can see - relies on RLS)
+        // Note: Listening to all messages might be heavy if not RLS filtered,
+        // but Supabase Realtime respects RLS if enabled on the table and 'broadcast' is off/configured correctly.
+        // Assuming RLS is set up properly for 'messages'.
+        messagesChannel = _supabase.channel('public:messages_global');
+        messagesChannel!
+            .onPostgresChanges(
+              event: PostgresChangeEvent.insert,
+              schema: 'public',
+              table: 'messages',
+              callback: (payload) {
+                // Ideally check if payload['new']['chat_id'] is in my known chats,
+                // but for now, just refreshing is safer and simpler to ensure UI consistency.
+                // debugPrint('New message detected, refreshing...');
+                fetchAndEmit();
+              },
+            )
+            .subscribe();
+      },
+      onCancel: () {
+        participantsChannel?.unsubscribe();
+        messagesChannel?.unsubscribe();
+        controller.close();
+      },
+    );
+
+    return controller.stream;
   }
 
   Future<List<MessageModel>> getMessages(String chatId) async {

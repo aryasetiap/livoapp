@@ -12,8 +12,8 @@ import 'package:lvoapp/features/auth/data/auth_repository.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:timeago/timeago.dart' as timeago;
 
-final chatsProvider = FutureProvider<List<ChatModel>>((ref) {
-  return ref.watch(chatRepositoryProvider).getChats();
+final chatsProvider = StreamProvider<List<ChatModel>>((ref) {
+  return ref.watch(chatRepositoryProvider).getChatsStream();
 });
 
 class ChatListScreen extends ConsumerWidget {
