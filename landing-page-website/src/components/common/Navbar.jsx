@@ -1,10 +1,31 @@
 import { useState, useEffect } from 'react';
 import { Menu, X } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
+  const location = useLocation();
+  const isHome = location.pathname === '/';
+
+  const navItems = [
+    { name: 'Beranda', href: '#home' },
+    { name: 'Fitur', href: '#fitur' },
+    { name: 'Tentang', href: '#tentang' }, // Changed to #tentang to match About section ID
+    { name: 'Privasi', href: '/privacy-policy' }
+  ];
+
+  const handleNavClick = (href) => {
+    setIsOpen(false);
+    if (!href.startsWith('#')) return; // Allow normal navigation for non-hash links
+
+    if (isHome) {
+      const element = document.querySelector(href);
+      if (element) {
+        element.scrollIntoView({ behavior: 'smooth' });
+      }
+    }
+  };
 
   useEffect(() => {
     const handleScroll = () => {
@@ -29,15 +50,32 @@ const Navbar = () => {
 
         {/* Desktop Menu */}
         <nav className="hidden md:flex items-center gap-10">
-          {['Beranda', 'Fitur', 'Tentang', 'Privasi'].map((item) => (
-            <a
-              key={item}
-              href={`#${item.toLowerCase() === 'beranda' ? 'home' : item.toLowerCase()}`}
-              className="font-semibold text-gray-400 hover:text-white relative group text-base"
-            >
-              {item}
-              <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-gradient-to-r from-primary to-secondary transition-all duration-300 group-hover:w-full"></span>
-            </a>
+          {navItems.map((item) => (
+            item.href.startsWith('#') ? (
+              <a
+                key={item.name}
+                href={isHome ? item.href : `/${item.href}`}
+                onClick={(e) => {
+                  if (isHome) {
+                    e.preventDefault();
+                    handleNavClick(item.href);
+                  }
+                }}
+                className="font-semibold text-gray-400 hover:text-white relative group text-base cursor-pointer"
+              >
+                {item.name}
+                <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-gradient-to-r from-primary to-secondary transition-all duration-300 group-hover:w-full"></span>
+              </a>
+            ) : (
+              <Link
+                key={item.name}
+                to={item.href}
+                className="font-semibold text-gray-400 hover:text-white relative group text-base cursor-pointer"
+              >
+                {item.name}
+                <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-gradient-to-r from-primary to-secondary transition-all duration-300 group-hover:w-full"></span>
+              </Link>
+            )
           ))}
           <a href="https://play.google.com/store/apps/details?id=com.lvo.app" className="px-7 py-3 bg-primary text-white rounded-full font-bold shadow-[0_4px_15px_rgba(139,92,246,0.4)] hover:bg-primary-dark hover:-translate-y-0.5 hover:shadow-[0_8px_25px_rgba(139,92,246,0.5)] transition-all">
             Download App
@@ -56,15 +94,33 @@ const Navbar = () => {
       {/* Mobile Menu Overlay */}
       <div className={`fixed inset-x-0 top-[90px] bg-black/95 backdrop-blur-xl border-b border-white/5 p-10 flex flex-col items-center gap-6 transition-transform duration-500 ease-in-out md:hidden ${isOpen ? 'translate-y-0 opacity-100' : '-translate-y-[150%] opacity-0'
         }`}>
-        {['Beranda', 'Fitur', 'Tentang', 'Privasi'].map((item) => (
-          <a
-            key={item}
-            href={`#${item.toLowerCase() === 'beranda' ? 'home' : item.toLowerCase()}`}
-            className="text-xl font-medium text-white hover:text-primary w-full text-center py-2 hover:bg-white/5 rounded-xl transition-colors"
-            onClick={() => setIsOpen(false)}
-          >
-            {item}
-          </a>
+        {navItems.map((item) => (
+          item.href.startsWith('#') ? (
+            <a
+              key={item.name}
+              href={isHome ? item.href : `/${item.href}`}
+              className="text-xl font-medium text-white hover:text-primary w-full text-center py-2 hover:bg-white/5 rounded-xl transition-colors"
+              onClick={(e) => {
+                if (isHome) {
+                  e.preventDefault();
+                  handleNavClick(item.href);
+                } else {
+                  setIsOpen(false);
+                }
+              }}
+            >
+              {item.name}
+            </a>
+          ) : (
+            <Link
+              key={item.name}
+              to={item.href}
+              className="text-xl font-medium text-white hover:text-primary w-full text-center py-2 hover:bg-white/5 rounded-xl transition-colors"
+              onClick={() => setIsOpen(false)}
+            >
+              {item.name}
+            </Link>
+          )
         ))}
         <a
           href="https://play.google.com/store/apps/details?id=com.lvo.app"
