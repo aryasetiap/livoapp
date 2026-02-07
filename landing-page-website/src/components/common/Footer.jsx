@@ -31,13 +31,18 @@ const Footer = () => {
           <div className="footer-links">
             <h4 className="mb-6 text-lg font-semibold tracking-wide uppercase">Navigasi</h4>
             <ul className="space-y-4">
-              {['Beranda', 'Fitur', 'Tentang', 'Download'].map((item) => (
+              {['Beranda', 'Fitur', 'Tentang'].map((item) => (
                 <li key={item}>
-                  <a href="#" className="text-gray-400 hover:text-primary transition-colors hover:translate-x-1 inline-block">
+                  <a href={`#${item.toLowerCase() === 'beranda' ? 'home' : item.toLowerCase()}`} className="text-gray-400 hover:text-primary transition-colors hover:translate-x-1 inline-block">
                     {item}
                   </a>
                 </li>
               ))}
+              <li>
+                <a href="https://play.google.com/store/apps/details?id=com.lvo.app" className="text-gray-400 hover:text-primary transition-colors hover:translate-x-1 inline-block">
+                  Download
+                </a>
+              </li>
             </ul>
           </div>
 

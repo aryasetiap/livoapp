@@ -4,33 +4,33 @@ import { Camera, Share2, Shield, Globe, Zap, Heart } from 'lucide-react';
 const features = [
   {
     icon: Camera,
-    title: "Kualitas HD",
-    description: "Upload dan bagikan foto serta video dengan kualitas terbaik tanpa kompresi berlebih."
+    title: "Kualitas Jernih",
+    description: "Nikmati pengalaman visual terbaik dengan dukungan foto dan video resolusi tinggi."
   },
   {
     icon: Share2,
-    title: "Berbagi Instan",
-    description: "Bagikan momen berharga ke berbagai platform lain hanya dengan satu sentuhan."
+    title: "Bagikan Momen",
+    description: "Sebarkan inspirasi ke teman dan keluarga dengan sekali sentuh ke berbagai platform."
   },
   {
     icon: Shield,
-    title: "Privasi Terjamin",
-    description: "Data Anda aman bersama kami. Kontrol penuh atas siapa yang bisa melihat konten Anda."
+    title: "Privasi Terjaga",
+    description: "Kendali penuh di tangan Anda. Atur siapa yang melihat konten personal Anda."
   },
   {
     icon: Globe,
-    title: "Komunitas Global",
-    description: "Temukan teman baru dari seluruh dunia dan pelajari budaya baru."
+    title: "Jelajahi Dunia",
+    description: "Terhubung dengan ragam budaya dan komunitas dari seluruh penjuru Indonesia."
   },
   {
     icon: Zap,
-    title: "Ringan & Cepat",
-    description: "Aplikasi dioptimalkan untuk berjalan lancar di berbagai perangkat Android."
+    title: "Akses Cepat",
+    description: "Performa aplikasi yang ringan dan responsif, hemat kuota dan baterai."
   },
   {
     icon: Heart,
-    title: "Bebas Iklan Mengganggu",
-    description: "Nikmati pengalaman scrolling yang nyaman tanpa gangguan iklan yang berlebihan."
+    title: "Fokus pada Konten",
+    description: "Tampilan antarmuka yang bersih, memprioritaskan konten yang Anda sukai."
   }
 ];
 
@@ -38,7 +38,7 @@ const Features = () => {
   return (
     <section id="fitur" className="py-20 bg-black relative">
       <div className="container mx-auto px-6 relative z-10">
-        <motion.div 
+        <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}

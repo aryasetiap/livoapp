@@ -19,18 +19,18 @@ const Hero = () => {
             <span className="text-primary font-semibold text-sm tracking-wide uppercase">Sosial Media Indonesia</span>
           </div>
           <h1 className="text-5xl lg:text-7xl font-bold leading-[1.1] mb-6 tracking-tight">
-            LVO - Aplikasi <br />
+            Ekspresikan Dirimu, <br />
             <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-secondary">
-              Berbagi Momen
+              Terhubung Tanpa Batas
             </span>
           </h1>
           <p className="text-xl text-gray-400 mb-10 leading-relaxed max-w-lg mx-auto lg:mx-0">
-            Bagikan foto dan video terbaikmu, temukan inspirasi baru, dan terhubung dengan teman-teman di seluruh dunia.
+            Platform sosial media Indonesia yang mengutamakan kreativitas dan privasi. Temukan komunitasmu sekarang.
           </p>
           <div className="flex flex-wrap justify-center lg:justify-start gap-4">
             <a href="https://play.google.com/store/apps/details?id=com.lvo.app" className="px-8 py-4 bg-primary text-white rounded-full font-bold shadow-lg hover:shadow-primary/50 hover:-translate-y-1 transition-all flex items-center gap-3">
-              <img src="" alt="Play Store" className="h-6" />
-              <span>Get on Play Store</span>
+              <img src="https://upload.wikimedia.org/wikipedia/commons/7/78/Google_Play_Store_badge_EN.svg" alt="Play Store" className="h-8" />
+              <span>Download Gratis di Google Play</span>
             </a>
             <a href="#about" className="px-8 py-4 bg-white/5 text-white border border-white/10 rounded-full font-bold hover:bg-white/10 hover:-translate-y-1 transition-all">
               Pelajari Lebih Lanjut

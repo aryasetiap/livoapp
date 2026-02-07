@@ -9,82 +9,90 @@ const PrivacyPolicy = () => {
       content: (
         <>
           <p className="mb-4">
-            Selamat datang di LVO App ("kami", "kita", atau "milik kami"). Kami berkomitmen untuk melindungi privasi dan keamanan data pribadi Anda. Kebijakan Privasi ini menjelaskan bagaimana kami mengumpulkan, menggunakan, mengungkapkan, dan menjaga informasi Anda saat menggunakan aplikasi seluler dan situs web kami.
+            Selamat datang di LVO App ("kami", "kita", atau "milik kami"). Kebijakan Privasi ini menjelaskan bagaimana kami mengumpulkan, menggunakan, mengungkapkan, dan menjaga informasi Anda saat menggunakan aplikasi seluler LVO App.
           </p>
           <p>
-            Dengan menggunakan Layanan kami, Anda menyetujui pengumpulan dan penggunaan informasi sesuai dengan kebijakan ini. Jika Anda tidak setuju dengan ketentuan ini, mohon untuk tidak menggunakan aplikasi kami.
+            LVO App adalah aplikasi media sosial yang ditujukan untuk pengguna umum di Indonesia. Kami berkomitmen untuk mematuhi kebijakan Google Play Store dan peraturan perlindungan data yang berlaku di Indonesia.
           </p>
         </>
       )
     },
     {
-      title: "2. Informasi yang Kami Kumpulkan",
+      title: "2. Informasi Pribadi",
       icon: Eye,
       content: (
         <>
-          <p className="mb-4 font-semibold text-white">a. Informasi yang Anda Berikan</p>
+          <p className="mb-4 font-semibold text-white">a. Informasi yang Anda Berikan Secara Langsung</p>
           <ul className="list-disc pl-6 space-y-2 mb-4 text-gray-400">
-            <li><strong>Data Akun:</strong> Nama pengguna, alamat email, nomor telepon, foto profil, dan kredensial login.</li>
-            <li><strong>Konten Pengguna (UGC):</strong> Foto, video, audio, komentar, dan pesan yang Anda unggah atau kirimkan melalui layanan.</li>
-            <li><strong>Profil:</strong> Bio, minat, dan informasi lain yang Anda tambahkan ke profil publik Anda.</li>
+            <li><strong>Informasi Akun:</strong> Saat mendaftar, kami mengumpulkan nama lengkap, alamat email, dan kredensial login (melalui Google Sign-In).</li>
+            <li><strong>Profil Pengguna:</strong> Foto profil, username, dan biodata yang Anda tambahkan bersifat publik.</li>
+            <li><strong>Konten Pengguna (UGC):</strong> Foto, video, dan komentar yang Anda unggah diproses dan disimpan untuk ditampilkan di layanan kami.</li>
           </ul>
 
           <p className="mb-4 font-semibold text-white">b. Informasi yang Dikumpulkan Secara Otomatis</p>
           <ul className="list-disc pl-6 space-y-2 mb-4 text-gray-400">
-            <li><strong>Data Perangkat:</strong> Model perangkat, versi sistem operasi, ID perangkat unik, dan alamat IP.</li>
-            <li><strong>Data Log:</strong> Waktu akses, durasi penggunaan, fitur yang dilihat, dan laporan crash.</li>
-            <li><strong>Lokasi:</strong> (Opsional) Data lokasi umum atau tepat jika Anda mengizinkan akses lokasi untuk fitur tertentu.</li>
+            <li><strong>Informasi Perangkat:</strong> Model HP, versi Android, ID perangkat, dan alamat IP untuk keamanan dan analitik.</li>
+            <li><strong>Data Log:</strong> Laporan crash dan data kinerja aplikasi untuk perbaikan bug (melalui Firebase Crashlytics).</li>
           </ul>
 
-          <p className="mb-4 font-semibold text-white">c. Izin Perangkat</p>
-          <p className="mb-2">Untuk memberikan fitur utama, kami mungkin meminta akses ke:</p>
+          <p className="mb-4 font-semibold text-white">c. Perizinan Aplikasi (Android Permissions)</p>
           <ul className="list-disc pl-6 space-y-2 text-gray-400">
-            <li><strong>Kamera & Mikrofon:</strong> Untuk mengambil foto, merekam video, dan fitur live streaming.</li>
-            <li><strong>Penyimpanan/Galeri:</strong> Untuk mengunggah dan menyimpan konten media.</li>
+            <li><strong>Kamera & Mikrofon:</strong> Diperlukan HANYA saat Anda menggunakan fitur kamera untuk mengambil foto/video atau saat live streaming.</li>
+            <li><strong>Penyimpanan (Read/Write External Storage):</strong> Diperlukan untuk memilih foto/video dari galeri Anda untuk diunggah.</li>
           </ul>
         </>
       )
     },
     {
-      title: "3. Penggunaan Informasi",
+      title: "3. Penggunaan & Pembagian Data",
       icon: UserCheck,
       content: (
         <>
-          <p className="mb-4">Kami menggunakan informasi yang dikumpulkan untuk:</p>
+          <p className="mb-4">
+            Kami menggunakan data Anda hanya untuk menyediakan fungsi aplikasi sosial media. <strong className="text-primary">Kami TIDAK menjual data pribadi Anda kepada pihak ketiga.</strong>
+          </p>
+          <p className="mb-2">Kami membagikan data hanya kepada penyedia layanan terpercaya berikut untuk operasional aplikasi:</p>
           <ul className="list-disc pl-6 space-y-2 text-gray-400">
-            <li>Menyediakan, mengoperasikan, dan memelihara aplikasi LVO.</li>
-            <li>Memproses unggahan konten dan interaksi sosial Anda.</li>
-            <li>Meningkatkan pengalaman pengguna, personalisasi konten, dan analisis penggunaan.</li>
-            <li>Mengelola akun Anda dan memberikan dukungan pelanggan.</li>
-            <li>Mendeteksi dan mencegah aktivitas penipuan atau penyalahgunaan.</li>
+            <li><strong>Google Firebase:</strong> Untuk autentikasi pengguna, penyimpanan database, media (Cloud Storage), dan analitik.</li>
+            <li><strong>Google Play Services:</strong> Untuk layanan inti Android.</li>
           </ul>
         </>
       )
     },
     {
-      title: "4. Keamanan Data",
+      title: "4. Privasi Anak-Anak",
+      icon: Shield,
+      content: (
+        <>
+          <p className="mb-4 font-bold text-red-400">PENTING:</p>
+          <p className="mb-4">
+            Layanan kami <strong>TIDAK ditujukan untuk anak-anak di bawah usia 13 tahun</strong>. Kami tidak dengan sengaja mengumpulkan informasi pribadi dari anak-anak di bawah 13 tahun.
+          </p>
+          <p>
+            Jika kami mengetahui bahwa kami telah mengumpulkan data dari anak di bawah 13 tahun tanpa verifikasi izin orang tua, kami akan segera menghapus informasi tersebut dari server kami. Jika Anda adalah orang tua/wali dan mengetahui anak Anda memberikan data kepada kami, silakan hubungi kami.
+          </p>
+        </>
+      )
+    },
+    {
+      title: "5. Keamanan Data",
       icon: Lock,
       content: (
         <>
           <p className="mb-4">
-            Kami menerapkan langkah-langkah keamanan teknis dan organisasi yang sesuai untuk melindungi data pribadi Anda dari akses, penggunaan, atau pengungkapan yang tidak sah.
-          </p>
-          <p>
-            Semua komunikasi data antara aplikasi dan server kami dienkripsi menggunakan protokol TLS/SSL standar industri. Namun, perlu diingat bahwa tidak ada metode transmisi melalui internet yang 100% aman.
+            Kami menerapkan enkripsi HTTPS/TLS untuk semua pengiriman data antara aplikasi dan server. Password pengguna tidak disimpan di server kami karena kami menggunakan Google Sign-In dan Firebase Auth.
           </p>
         </>
       )
     },
     {
-      title: "5. Layanan Pihak Ketiga",
+      title: "6. Perubahan Kebijakan",
       icon: Server,
       content: (
         <>
-          <p className="mb-4">Kami menggunakan layanan pihak ketiga terpercaya untuk operasional aplikasi:</p>
-          <ul className="list-disc pl-6 space-y-2 text-primary">
-            <li><a href="https://firebase.google.com/policies/analytics" target="_blank" rel="noreferrer" className="hover:underline hover:text-white transition-colors">Google Firebase (Auth, Analytics, Crashlytics)</a></li>
-            <li><a href="https://policies.google.com/privacy" target="_blank" rel="noreferrer" className="hover:underline hover:text-white transition-colors">Google Play Services</a></li>
-          </ul>
+          <p className="mb-4">
+            Kami dapat memperbarui Kebijakan Privasi ini dari waktu ke waktu. Kami akan memberi tahu Anda tentang perubahan apa pun dengan memposting Kebijakan Privasi baru di halaman ini dan memperbarui "Tanggal Terakhir Diperbarui". Anda disarankan untuk meninjau halaman ini secara berkala.
+          </p>
         </>
       )
     }
