@@ -1,7 +1,18 @@
 import { Component } from 'react';
 import { Mail, Github, Twitter, Instagram } from 'lucide-react';
+import { useLocation, Link } from 'react-router-dom';
 
 const Footer = () => {
+  const location = useLocation();
+  const isHome = location.pathname === '/';
+
+  const handleNavClick = (id) => {
+    const element = document.getElementById(id.replace('#', ''));
+    if (element) {
+      element.scrollIntoView({ behavior: 'smooth' });
+    }
+  };
+
   return (
     <footer className="relative bg-gradient-to-t from-[#0a0a0a] to-black text-white pt-24 pb-10 overflow-hidden border-t border-white/5">
       {/* Glow Effect */}
@@ -31,13 +42,32 @@ const Footer = () => {
           <div className="footer-links">
             <h4 className="mb-6 text-lg font-semibold tracking-wide uppercase">Navigasi</h4>
             <ul className="space-y-4">
-              {['Beranda', 'Fitur', 'Tentang'].map((item) => (
-                <li key={item}>
-                  <a href={`#${item.toLowerCase() === 'beranda' ? 'home' : item.toLowerCase()}`} className="text-gray-400 hover:text-primary transition-colors hover:translate-x-1 inline-block">
-                    {item}
-                  </a>
-                </li>
-              ))}
+              {['Beranda', 'Fitur', 'Tentang'].map((item) => {
+                const href = `#${item.toLowerCase() === 'beranda' ? 'home' : item.toLowerCase()}`;
+                return (
+                  <li key={item}>
+                    {isHome ? (
+                      <a
+                        href={href}
+                        onClick={(e) => {
+                          e.preventDefault();
+                          handleNavClick(href);
+                        }}
+                        className="text-gray-400 hover:text-primary transition-colors hover:translate-x-1 inline-block cursor-pointer"
+                      >
+                        {item}
+                      </a>
+                    ) : (
+                      <Link
+                        to={`/${href}`}
+                        className="text-gray-400 hover:text-primary transition-colors hover:translate-x-1 inline-block"
+                      >
+                        {item}
+                      </Link>
+                    )}
+                  </li>
+                );
+              })}
               <li>
                 <a href="https://play.google.com/store/apps/details?id=com.lvo.app" className="text-gray-400 hover:text-primary transition-colors hover:translate-x-1 inline-block">
                   Download
@@ -50,9 +80,9 @@ const Footer = () => {
           <div className="footer-links">
             <h4 className="mb-6 text-lg font-semibold tracking-wide uppercase">Legal</h4>
             <ul className="space-y-4">
-              <li><a href="/privacy-policy" className="text-gray-400 hover:text-primary transition-colors">Kebijakan Privasi</a></li>
-              <li><a href="#" className="text-gray-400 hover:text-primary transition-colors">Syarat & Ketentuan</a></li>
-              <li><a href="#" className="text-gray-400 hover:text-primary transition-colors">Panduan Komunitas</a></li>
+              <li><Link to="/privacy-policy" className="text-gray-400 hover:text-primary transition-colors">Kebijakan Privasi</Link></li>
+              <li><Link to="/terms" className="text-gray-400 hover:text-primary transition-colors">Syarat & Ketentuan</Link></li>
+              <li><Link to="/community-guidelines" className="text-gray-400 hover:text-primary transition-colors">Panduan Komunitas</Link></li>
             </ul>
           </div>
 
