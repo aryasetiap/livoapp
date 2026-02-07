@@ -6,6 +6,9 @@ plugins {
     id("com.google.gms.google-services")
 }
 
+import java.util.Properties
+import java.io.FileInputStream
+
 android {
     namespace = "com.lvo.app.lvoapp"
     compileSdk = flutter.compileSdkVersion
@@ -39,11 +42,28 @@ android {
         resValue("string", "app_description", "LVO - Social media untuk berbagi foto dan video singkat")
     }
 
+
+    val keystoreProperties = Properties()
+    val keystorePropertiesFile = rootProject.file("key.properties")
+    if (keystorePropertiesFile.exists()) {
+        keystoreProperties.load(FileInputStream(keystorePropertiesFile))
+    }
+
     buildTypes {
         release {
-            // TODO: Add your own signing config for the release build.
-            // Signing with the debug keys for now, so `flutter run --release` works.
-            signingConfig = signingConfigs.getByName("debug")
+            if (keystorePropertiesFile.exists()) {
+                signingConfig = signingConfigs.create("release") {
+                    keyAlias = keystoreProperties["keyAlias"] as String
+                    keyPassword = keystoreProperties["keyPassword"] as String
+                    storeFile = file(keystoreProperties["storeFile"] as String)
+                    storePassword = keystoreProperties["storePassword"] as String
+                }
+            } else {
+                 // Fallback to debug signing if key.properties is missing (e.g. CI)
+                 // or just leave it unsigned/debug-signed if you prefer error.
+                 // For now, mirroring original behavior or utilizing debug keys if release keys missing
+                 signingConfig = signingConfigs.getByName("debug")
+            }
         }
     }
 }
