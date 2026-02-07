@@ -29,13 +29,6 @@ const Footer = () => {
             <p className="text-gray-400 mb-8 leading-relaxed max-w-sm">
               Platform sosial media karya anak bangsa. Berbagi momen, temukan inspirasi, dan terhubung dengan dunia dalam satu aplikasi.
             </p>
-            <div className="flex gap-4">
-              {[Twitter, Instagram, Github].map((Icon, i) => (
-                <a key={i} href="#" className="h-10 w-10 flex items-center justify-center rounded-full bg-white/5 hover:bg-primary/20 hover:text-primary transition-all hover:-translate-y-1">
-                  <Icon size={20} />
-                </a>
-              ))}
-            </div>
           </div>
 
           {/* Links */}

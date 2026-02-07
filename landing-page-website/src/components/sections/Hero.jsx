@@ -32,7 +32,7 @@ const Hero = () => {
               <img src="https://upload.wikimedia.org/wikipedia/commons/7/78/Google_Play_Store_badge_EN.svg" alt="Play Store" className="h-8" />
               <span>Download Gratis di Google Play</span>
             </a>
-            <a href="#about" className="px-8 py-4 bg-white/5 text-white border border-white/10 rounded-full font-bold hover:bg-white/10 hover:-translate-y-1 transition-all">
+            <a href="#tentang" className="px-8 py-4 bg-white/5 text-white border border-white/10 rounded-full font-bold hover:bg-white/10 hover:-translate-y-1 transition-all">
               Pelajari Lebih Lanjut
             </a>
           </div>
