@@ -1,4 +1,3 @@
-import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -106,17 +105,23 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
             top: -100,
             left: -100,
             child:
-                ImageFiltered(
-                      imageFilter: ui.ImageFilter.blur(sigmaX: 80, sigmaY: 80),
-                      child: Container(
-                        width: 300,
-                        height: 300,
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          color: Theme.of(
-                            context,
-                          ).colorScheme.primary.withValues(alpha: 0.3),
-                        ),
+                Container(
+                      width: 300,
+                      height: 300,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: Theme.of(
+                          context,
+                        ).colorScheme.primary.withValues(alpha: 0.3),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Theme.of(
+                              context,
+                            ).colorScheme.primary.withValues(alpha: 0.3),
+                            blurRadius: 80,
+                            spreadRadius: 20,
+                          ),
+                        ],
                       ),
                     )
                     .animate(
@@ -132,17 +137,23 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
             bottom: -50,
             right: -50,
             child:
-                ImageFiltered(
-                      imageFilter: ui.ImageFilter.blur(sigmaX: 60, sigmaY: 60),
-                      child: Container(
-                        width: 250,
-                        height: 250,
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          color: Theme.of(
-                            context,
-                          ).colorScheme.secondary.withValues(alpha: 0.2),
-                        ),
+                Container(
+                      width: 250,
+                      height: 250,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: Theme.of(
+                          context,
+                        ).colorScheme.secondary.withValues(alpha: 0.2),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Theme.of(
+                              context,
+                            ).colorScheme.secondary.withValues(alpha: 0.2),
+                            blurRadius: 60,
+                            spreadRadius: 20,
+                          ),
+                        ],
                       ),
                     )
                     .animate(

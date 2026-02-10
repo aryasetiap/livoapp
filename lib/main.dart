@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:firebase_core/firebase_core.dart';
-import 'package:firebase_messaging/firebase_messaging.dart';
+
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:go_router/go_router.dart';
 import 'core/config/theme.dart';
@@ -32,53 +32,17 @@ import 'core/router/auth_notifier.dart';
 
 import 'package:timeago/timeago.dart' as timeago;
 
-Future<void> setupFcmForAuthenticatedUsers() async {
-  try {
-    final auth = Supabase.instance.client.auth;
-    final user = auth.currentUser;
-
-    if (user != null) {
-      final messaging = FirebaseMessaging.instance;
-
-      // Request permission for iOS
-      await messaging.requestPermission();
-
-      // Get FCM token
-      String? token = await messaging.getToken();
-
-      if (token != null) {
-        await Supabase.instance.client
-            .from('profiles')
-            .update({'fcm_token': token})
-            .eq('id', user.id);
-      }
-
-      // Setup token refresh listener
-      messaging.onTokenRefresh.listen((newToken) async {
-        await Supabase.instance.client
-            .from('profiles')
-            .update({'fcm_token': newToken})
-            .eq('id', user.id);
-      });
-    }
-  } catch (e) {
-    debugPrint('Failed to setup FCM: $e');
-  }
-}
-
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await dotenv.load(fileName: "lib/core/config/.env");
 
-  await Firebase.initializeApp();
-
-  await Supabase.initialize(
-    url: dotenv.env['SUPABASE_URL']!,
-    anonKey: dotenv.env['SUPABASE_ANON_KEY']!,
-  );
-
-  // Setup FCM for already authenticated users
-  setupFcmForAuthenticatedUsers();
+  await Future.wait([
+    Firebase.initializeApp(),
+    Supabase.initialize(
+      url: dotenv.env['SUPABASE_URL']!,
+      anonKey: dotenv.env['SUPABASE_ANON_KEY']!,
+    ),
+  ]);
 
   timeago.setLocaleMessages('id', timeago.IdMessages());
 
@@ -297,11 +261,15 @@ class _LvoAppState extends ConsumerState<LvoApp> {
           event == AuthChangeEvent.tokenRefreshed ||
           (event == AuthChangeEvent.initialSession && session != null)) {
         // Ensure profile and FCM token are set up whenever we have a valid session
-        debugPrint('Auth event: $event - Ensuring profile & FCM...');
-        final authRepo = ref.read(authRepositoryProvider);
-        await authRepo.ensureProfileExists();
-        await authRepo.saveFcmToken();
-        await authRepo.setupFcmListeners();
+        // Delay this slightly to allow UI to render first and avoid dropped frames
+        Future.delayed(const Duration(seconds: 2), () async {
+          if (!mounted) return;
+          debugPrint('Auth event: $event - Ensuring profile & FCM...');
+          final authRepo = ref.read(authRepositoryProvider);
+          await authRepo.ensureProfileExists();
+          await authRepo.saveFcmToken();
+          await authRepo.setupFcmListeners();
+        });
       }
     });
   }
