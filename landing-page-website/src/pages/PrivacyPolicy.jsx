@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import { ArrowLeft, Shield, Lock, Eye, Server, UserCheck } from 'lucide-react';
+import { ArrowLeft, Shield, Lock, Eye, Server, UserCheck, Trash2 } from 'lucide-react';
 
 const PrivacyPolicy = () => {
   const sections = [
@@ -9,36 +9,36 @@ const PrivacyPolicy = () => {
       content: (
         <>
           <p className="mb-4">
-            Selamat datang di LVO App ("kami", "kita", atau "milik kami"). Kebijakan Privasi ini menjelaskan bagaimana kami mengumpulkan, menggunakan, mengungkapkan, dan menjaga informasi Anda saat menggunakan aplikasi seluler LVO App.
+            Selamat datang di LVO App (“kami”, “kita”, atau “milik kami”). Kebijakan Privasi ini menjelaskan bagaimana kami mengumpulkan, menggunakan, menyimpan, dan melindungi informasi pengguna saat Anda menggunakan aplikasi LVO App.
           </p>
           <p>
-            LVO App adalah aplikasi media sosial yang ditujukan untuk pengguna umum di Indonesia. Kami berkomitmen untuk mematuhi kebijakan Google Play Store dan peraturan perlindungan data yang berlaku di Indonesia.
+            LVO App adalah aplikasi media sosial yang ditujukan untuk pengguna umum di Indonesia dan dirancang sesuai dengan Kebijakan Developer Google Play serta peraturan perlindungan data yang berlaku.
           </p>
         </>
       )
     },
     {
-      title: "2. Informasi Pribadi",
+      title: "2. Informasi yang Kami Kumpulkan",
       icon: Eye,
       content: (
         <>
           <p className="mb-4 font-semibold text-white">a. Informasi yang Anda Berikan Secara Langsung</p>
           <ul className="list-disc pl-6 space-y-2 mb-4 text-gray-400">
-            <li><strong>Informasi Akun:</strong> Saat mendaftar, kami mengumpulkan nama lengkap, alamat email, dan kredensial login (melalui Google Sign-In).</li>
-            <li><strong>Profil Pengguna:</strong> Foto profil, username, dan biodata yang Anda tambahkan bersifat publik.</li>
-            <li><strong>Konten Pengguna (UGC):</strong> Foto, video, dan komentar yang Anda unggah diproses dan disimpan untuk ditampilkan di layanan kami.</li>
+            <li><strong>Informasi Akun:</strong> Nama dan alamat email yang diperoleh melalui Google Sign-In, digunakan untuk autentikasi dan pengelolaan akun.</li>
+            <li><strong>Profil Pengguna:</strong> Foto profil, username, dan biodata yang Anda tambahkan bersifat publik sesuai pengaturan aplikasi.</li>
+            <li><strong>Konten Pengguna (User Generated Content):</strong> Foto, video, dan komentar yang Anda unggah, digunakan untuk menampilkan fitur media sosial di dalam aplikasi.</li>
           </ul>
 
           <p className="mb-4 font-semibold text-white">b. Informasi yang Dikumpulkan Secara Otomatis</p>
           <ul className="list-disc pl-6 space-y-2 mb-4 text-gray-400">
-            <li><strong>Informasi Perangkat:</strong> Model HP, versi Android, ID perangkat, dan alamat IP untuk keamanan dan analitik.</li>
-            <li><strong>Data Log:</strong> Laporan crash dan data kinerja aplikasi untuk perbaikan bug (melalui Firebase Crashlytics).</li>
+            <li><strong>Informasi Perangkat & Teknis:</strong> Model perangkat, versi sistem operasi Android, alamat IP, serta identifier non-personal (seperti Firebase Installation ID) yang digunakan untuk keamanan, pencegahan penyalahgunaan, dan analitik.</li>
+            <li><strong>Data Log & Crash:</strong> Data kinerja aplikasi dan laporan error yang dikumpulkan melalui Firebase Crashlytics untuk peningkatan stabilitas dan perbaikan bug.</li>
           </ul>
 
           <p className="mb-4 font-semibold text-white">c. Perizinan Aplikasi (Android Permissions)</p>
           <ul className="list-disc pl-6 space-y-2 text-gray-400">
-            <li><strong>Kamera & Mikrofon:</strong> Diperlukan HANYA saat Anda menggunakan fitur kamera untuk mengambil foto/video atau saat live streaming.</li>
-            <li><strong>Penyimpanan (Read/Write External Storage):</strong> Diperlukan untuk memilih foto/video dari galeri Anda untuk diunggah.</li>
+            <li><strong>Kamera & Mikrofon:</strong> Digunakan hanya saat Anda mengambil foto/video atau melakukan live streaming.</li>
+            <li><strong>Penyimpanan:</strong> Digunakan untuk memilih dan mengunggah media dari galeri perangkat Anda.</li>
           </ul>
         </>
       )
@@ -48,13 +48,20 @@ const PrivacyPolicy = () => {
       icon: UserCheck,
       content: (
         <>
+          <p className="mb-4">Kami menggunakan data pengguna hanya untuk tujuan berikut:</p>
+          <ul className="list-disc pl-6 space-y-2 mb-4 text-gray-400">
+            <li>Menyediakan dan mengoperasikan fitur aplikasi</li>
+            <li>Autentikasi dan keamanan akun</li>
+            <li>Personalisasi pengalaman pengguna</li>
+            <li>Analitik dan peningkatan kualitas layanan</li>
+          </ul>
           <p className="mb-4">
-            Kami menggunakan data Anda hanya untuk menyediakan fungsi aplikasi sosial media. <strong className="text-primary">Kami TIDAK menjual data pribadi Anda kepada pihak ketiga.</strong>
+            Kami tidak menjual data pribadi pengguna.
           </p>
-          <p className="mb-2">Kami membagikan data hanya kepada penyedia layanan terpercaya berikut untuk operasional aplikasi:</p>
+          <p className="mb-2">Data hanya dibagikan kepada penyedia layanan pihak ketiga yang diperlukan untuk operasional aplikasi, antara lain:</p>
           <ul className="list-disc pl-6 space-y-2 text-gray-400">
-            <li><strong>Google Firebase:</strong> Untuk autentikasi pengguna, penyimpanan database, media (Cloud Storage), dan analitik.</li>
-            <li><strong>Google Play Services:</strong> Untuk layanan inti Android.</li>
+            <li>Google Firebase (Authentication, Firestore/Database, Cloud Storage, Analytics, Crashlytics)</li>
+            <li>Google Play Services</li>
           </ul>
         </>
       )
@@ -64,12 +71,14 @@ const PrivacyPolicy = () => {
       icon: Shield,
       content: (
         <>
-          <p className="mb-4 font-bold text-red-400">PENTING:</p>
           <p className="mb-4">
-            Layanan kami <strong>TIDAK ditujukan untuk anak-anak di bawah usia 13 tahun</strong>. Kami tidak dengan sengaja mengumpulkan informasi pribadi dari anak-anak di bawah 13 tahun.
+            LVO App tidak ditujukan untuk anak-anak di bawah usia 13 tahun dan tidak mengizinkan pembuatan akun oleh anak di bawah 13 tahun.
+          </p>
+          <p className="mb-4">
+            Kami tidak dengan sengaja mengumpulkan informasi pribadi dari anak-anak di bawah usia tersebut. Jika kami mengetahui adanya data anak di bawah 13 tahun yang dikumpulkan tanpa persetujuan orang tua atau wali, kami akan segera menghapus data tersebut.
           </p>
           <p>
-            Jika kami mengetahui bahwa kami telah mengumpulkan data dari anak di bawah 13 tahun tanpa verifikasi izin orang tua, kami akan segera menghapus informasi tersebut dari server kami. Jika Anda adalah orang tua/wali dan mengetahui anak Anda memberikan data kepada kami, silakan hubungi kami.
+            Orang tua atau wali dapat menghubungi kami melalui email jika memiliki kekhawatiran terkait data anak.
           </p>
         </>
       )
@@ -79,19 +88,40 @@ const PrivacyPolicy = () => {
       icon: Lock,
       content: (
         <>
-          <p className="mb-4">
-            Kami menerapkan enkripsi HTTPS/TLS untuk semua pengiriman data antara aplikasi dan server. Password pengguna tidak disimpan di server kami karena kami menggunakan Google Sign-In dan Firebase Auth.
+          <p className="mb-4">Kami menerapkan langkah-langkah keamanan teknis dan organisasi yang wajar, termasuk:</p>
+          <ul className="list-disc pl-6 space-y-2 mb-4 text-gray-400">
+            <li>Enkripsi data menggunakan HTTPS/TLS</li>
+            <li>Autentikasi aman melalui Google Sign-In & Firebase Authentication</li>
+          </ul>
+          <p>
+            Kami tidak menyimpan password pengguna secara langsung di server kami.
           </p>
         </>
       )
     },
     {
-      title: "6. Perubahan Kebijakan",
+      title: "6. Penghapusan Akun & Data",
+      icon: Trash2,
+      content: (
+        <>
+          <p className="mb-2">Pengguna memiliki hak untuk menghapus akun dan data pribadi kapan saja dengan:</p>
+          <ul className="list-disc pl-6 space-y-2 mb-4 text-gray-400">
+            <li>Menu Pengaturan {'>'} Hapus Akun di dalam aplikasi, atau</li>
+            <li>Menghubungi kami melalui email</li>
+          </ul>
+          <p>
+            Permintaan penghapusan data akan diproses maksimal 30 hari sesuai ketentuan yang berlaku.
+          </p>
+        </>
+      )
+    },
+    {
+      title: "7. Perubahan Kebijakan",
       icon: Server,
       content: (
         <>
           <p className="mb-4">
-            Kami dapat memperbarui Kebijakan Privasi ini dari waktu ke waktu. Kami akan memberi tahu Anda tentang perubahan apa pun dengan memposting Kebijakan Privasi baru di halaman ini dan memperbarui "Tanggal Terakhir Diperbarui". Anda disarankan untuk meninjau halaman ini secara berkala.
+            Kami dapat memperbarui Kebijakan Privasi ini dari waktu ke waktu. Perubahan akan diumumkan dengan memperbarui tanggal “Terakhir diperbarui” di halaman ini.
           </p>
         </>
       )
@@ -107,7 +137,7 @@ const PrivacyPolicy = () => {
           <span>Kembali ke Beranda</span>
         </Link>
         <h1 className="text-4xl md:text-6xl font-bold mb-4 bg-gradient-to-r from-white to-gray-500 bg-clip-text text-transparent">Kebijakan Privasi</h1>
-        <p className="text-gray-400 text-lg">Terakhir diperbarui: {new Date().toLocaleDateString('id-ID', { year: 'numeric', month: 'long', day: 'numeric' })}</p>
+        <p className="text-gray-400 text-lg">Terakhir diperbarui: 10 Februari 2026</p>
       </div>
 
       {/* Content */}
@@ -155,16 +185,7 @@ const PrivacyPolicy = () => {
             );
           })}
 
-          {/* Deletion Section */}
-          <section className="bg-gradient-to-br from-red-500/10 to-red-900/10 p-8 rounded-3xl border border-red-500/20">
-            <h2 className="text-2xl font-bold text-red-400 mb-4">Penghapusan Data</h2>
-            <p className="text-gray-300 mb-4">
-              Anda memiliki hak untuk meminta penghapusan akun dan data terkait kapan saja. Anda dapat melakukan ini melalui menu <strong>Pengaturan {'>'} Hapus Akun</strong> di dalam aplikasi, atau dengan menghubungi kami.
-            </p>
-            <p className="text-gray-400 text-sm">
-              Kami akan memproses permintaan penghapusan data Anda dalam waktu 30 hari sesuai dengan ketentuan yang berlaku.
-            </p>
-          </section>
+
         </div>
       </div>
     </div>
