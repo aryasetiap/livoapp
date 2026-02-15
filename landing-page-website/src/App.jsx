@@ -3,9 +3,9 @@ import Layout from './components/layout/Layout';
 import ScrollToTop from './components/common/ScrollToTop';
 import Home from './pages/Home';
 import PrivacyPolicy from './pages/PrivacyPolicy';
-
 import Terms from './pages/Terms';
 import CommunityGuidelines from './pages/CommunityGuidelines';
+import DeleteAccount from './pages/DeleteAccount';
 
 function App() {
   return (
@@ -17,6 +17,7 @@ function App() {
           <Route path="/privacy-policy" element={<PrivacyPolicy />} />
           <Route path="/terms" element={<Terms />} />
           <Route path="/community-guidelines" element={<CommunityGuidelines />} />
+          <Route path="/delete-account" element={<DeleteAccount />} />
         </Routes>
       </Layout>
     </Router>
